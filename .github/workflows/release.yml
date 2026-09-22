@@ -49,9 +49,9 @@ jobs:
       - name: Verify package
         run: |
           pnpm lint
+          pnpm build
           pnpm typecheck
           pnpm --filter @pomepitech/ordo test
-          pnpm build
 
       - name: Publish package with provenance
         env:
