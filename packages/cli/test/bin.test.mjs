@@ -37,7 +37,7 @@ test('compiled CLI executes when Node receives a symlinked bin path', async () =
   const result = await executeFile(process.execPath, [linkedBin, '--version'])
 
   assert.equal(result.stderr, '')
-  assert.equal(result.stdout, '1.0.0\n')
+  assert.equal(result.stdout, '1.0.1\n')
 })
 
 test('global options without a command are reported as options', async () => {

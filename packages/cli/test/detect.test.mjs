@@ -124,7 +124,7 @@ test('help and version return without inspecting a repository', async () => {
   assert.equal(help.exitCode, 0)
   assert.match(help.stdout, /Usage: ordo detect \[directory\] \[--json\]/)
   assert.equal(version.exitCode, 0)
-  assert.equal(version.stdout, '1.0.0\n')
+  assert.equal(version.stdout, '1.0.1\n')
 })
 
 test('unknown commands return a usage error', async () => {

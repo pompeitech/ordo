@@ -26,7 +26,7 @@ import {
   runInitWizard
 } from './prompts/init.js'
 
-export const CLI_VERSION = '1.0.0'
+export const CLI_VERSION = '1.0.1'
 
 export interface CliWriter {
   readonly isTTY?: boolean

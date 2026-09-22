@@ -8,6 +8,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 Changes that will be included in the next release go here.
 
+## [1.0.1] - 2026-09-22
+
+### Fixed
+
+- Corrected the published npm scope to `@pompeitech/ordo`.
+- Rejected global options such as `-j` when no command is provided.
+- Made CLI tests deterministic when terminal color variables are set.
+
+### Release metadata
+
+- Git tag: `v1.0.1`
+- Author: Davide D'Antonio <davide.dantonio1984@gmail.com>
+
 ## [1.0.0] - 2026-09-22
 
 ### Added
@@ -30,5 +43,6 @@ Changes that will be included in the next release go here.
 - Git tag: `v1.0.0`
 - Author: Davide D'Antonio <davide.dantonio1984@gmail.com>
 
-[Unreleased]: https://github.com/pompeitech/ordo/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/pompeitech/ordo/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/pompeitech/ordo/releases/tag/v1.0.1
 [1.0.0]: https://github.com/pompeitech/ordo/releases/tag/v1.0.0

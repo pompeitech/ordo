@@ -1,6 +1,6 @@
 {
   "name": "@pompeitech/ordo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Deterministic agent-engineering harness for Claude Code and Codex.",
   "author": {
     "name": "Davide D'Antonio",
