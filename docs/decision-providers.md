@@ -4,7 +4,7 @@ Ordo's core exposes deterministic decision-provider contracts for future integra
 
 ## JEV status
 
-`@pompeitech/ordo-decision-jev` is currently a workspace placeholder reserved for a future JEV provider. Its source files are intentionally empty in 1.0; it is not bundled by `@pomepitech/ordo`, it is not published as part of the CLI artifact, and no runtime path imports it.
+`@pompeitech/ordo-decision-jev` is currently a workspace placeholder reserved for a future JEV provider. Its source files are intentionally empty in 1.0; it is not bundled by `@pompeitech/ordo`, it is not published as part of the CLI artifact, and no runtime path imports it.
 
 The architecture diagram shows the intended dependency direction only:
 

@@ -5,7 +5,7 @@ Ordo separates deterministic domain logic from harness-specific mapping, termina
 ## Package graph
 
 ```text
-@pomepitech/ordo (CLI)
+@pompeitech/ordo (CLI)
 ├── @pompeitech/ordo-adapter-claude ──┐
 ├── @pompeitech/ordo-adapter-codex ───┼──> @pompeitech/ordo-core
 └─────────────────────────────────────┘

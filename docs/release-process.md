@@ -63,7 +63,7 @@ Use a temporary npm prefix so the test does not replace a developer's global com
 ```bash
 TEMP_PREFIX="$(mktemp -d)"
 TEMP_PROJECT="$(mktemp -d)"
-npm install --global --prefix "$TEMP_PREFIX" ./artifacts/pomepitech-ordo-1.0.0.tgz
+npm install --global --prefix "$TEMP_PREFIX" ./artifacts/pompeitech-ordo-1.0.0.tgz
 cd "$TEMP_PROJECT"
 npm init -y
 "$TEMP_PREFIX/bin/ordo" --version
@@ -132,11 +132,11 @@ The repository contains [`.github/workflows/release.yml`](../.github/workflows/r
 1. installs the frozen workspace lockfile;
 2. verifies that the tag matches `packages/cli/package.json`;
 3. runs lint, typecheck, CLI tests, and the workspace build;
-4. publishes `@pomepitech/ordo` from `packages/cli` with npm provenance.
+4. publishes `@pompeitech/ordo` from `packages/cli` with npm provenance.
 
 Configure the repository before the first automated release:
 
-- create an npm access token with permission to publish `@pomepitech/ordo`;
+- create an npm access token with permission to publish `@pompeitech/ordo`;
 - add it as the repository or `npm` environment secret named `NPM_TOKEN`;
 - protect the `npm` environment with an approval rule if releases require manual approval;
 - enable npm provenance/trusted publishing for the repository when available.

@@ -1,4 +1,4 @@
-# @pomepitech/ordo
+# @pompeitech/ordo
 
 ```text
    ██████╗        ██████╗ ██████╗ ██████╗  ██████╗
@@ -14,7 +14,7 @@ Deterministic content and workflow management for Claude Code and Codex.
 ## Install
 
 ```bash
-npm install -g @pomepitech/ordo
+npm install -g @pompeitech/ordo
 ```
 
 ## Quick start

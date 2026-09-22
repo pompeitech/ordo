@@ -31,7 +31,7 @@ Ordo keeps the reusable engineering layer of an AI coding setup — agents, rule
 ## Install
 
 ```bash
-npm install -g @pomepitech/ordo
+npm install -g @pompeitech/ordo
 ```
 
 Requires Node.js 20.12 or newer.
@@ -158,7 +158,7 @@ pnpm test
 pnpm build
 ```
 
-The public npm package is `@pomepitech/ordo`.
+The public npm package is `@pompeitech/ordo`.
 
 ## Release
 

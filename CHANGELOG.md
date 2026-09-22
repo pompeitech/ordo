@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `@pomepitech/ordo` are documented here.
+All notable changes to `@pompeitech/ordo` are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and releases use [Semantic Versioning](https://semver.org/).
 
@@ -18,7 +18,7 @@ Changes that will be included in the next release go here.
 - Claude Code and Codex adapters with canonical agents, rules, skills, and workflows.
 - Catalog inspection commands for agents, rules, skills, and workflows.
 - `ordo doctor` diagnostics and JSON output for automation.
-- Published npm CLI package metadata for `@pomepitech/ordo`.
+- Published npm CLI package metadata for `@pompeitech/ordo`.
 
 ### Changed
 

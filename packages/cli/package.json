@@ -1,5 +1,5 @@
 {
-  "name": "@pomepitech/ordo",
+  "name": "@pompeitech/ordo",
   "version": "1.0.0",
   "description": "Deterministic agent-engineering harness for Claude Code and Codex.",
   "author": {

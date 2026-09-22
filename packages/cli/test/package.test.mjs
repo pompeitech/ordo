@@ -25,7 +25,7 @@ test('packaged CLI runs with bundled runtime and content outside the workspace',
   })
   await writeFile(
     path.join(packageDirectory, 'package.json'),
-    '{"name":"@pomepitech/ordo","version":"1.0.0","type":"module"}\n'
+    '{"name":"@pompeitech/ordo","version":"1.0.0","type":"module"}\n'
   )
   await mkdir(targetDirectory, { recursive: true })
   await writeFile(
@@ -56,7 +56,7 @@ test('published package has no runtime dependencies', async () => {
     await readFile(path.resolve(import.meta.dirname, '../package.json'), 'utf8')
   )
 
-  assert.equal(manifest.name, '@pomepitech/ordo')
+  assert.equal(manifest.name, '@pompeitech/ordo')
   assert.equal(manifest.version, '1.0.0')
   assert.deepEqual(manifest.dependencies ?? {}, {})
   assert.deepEqual(manifest.files, ['dist/bin.js', 'dist/content'])

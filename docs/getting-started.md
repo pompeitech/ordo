@@ -15,7 +15,7 @@ Ordo itself does not require the target repository to use npm, pnpm, Yarn, or Bu
 Install the standalone package globally from npm:
 
 ```bash
-npm install --global @pomepitech/ordo
+npm install --global @pompeitech/ordo
 ordo --version
 ```
 
