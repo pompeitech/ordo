@@ -22,6 +22,8 @@ This directory contains the operational and technical documentation for Ordo. Th
 
 The version history is maintained in the repository [changelog](../CHANGELOG.md). Every published version must have a matching annotated Git tag.
 
+The planned product direction is tracked in the repository [roadmap](../ROADMAP.md).
+
 Repository collaboration policies are documented in [CONTRIBUTING.md](../CONTRIBUTING.md), [SECURITY.md](../SECURITY.md), and [LICENSE](../LICENSE). GitHub issue forms, pull request templates, and CODEOWNERS live under [`.github/`](../.github/).
 
 ## Documentation contract

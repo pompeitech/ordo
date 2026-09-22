@@ -182,6 +182,7 @@ For the repository release path, push an annotated `vX.Y.Z` tag after the releas
 - [Installation safety](docs/installation-safety.md)
 - [Release process](docs/release-process.md)
 - [Changelog](CHANGELOG.md)
+- [Roadmap](ROADMAP.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 - [License](LICENSE)
