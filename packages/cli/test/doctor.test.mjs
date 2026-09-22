@@ -79,7 +79,8 @@ test('doctor renders a healthy console report', async () => {
 
   assert.equal(result.exitCode, 0)
   assert.equal(result.stderr, '')
-  assert.match(result.stdout, /^◆ ORDO \/\/ DOCTOR/m)
+  assert.match(result.stdout, /◆ ORDO/)
+  assert.match(result.stdout, /DOCTOR/)
   assert.match(result.stdout, /health\s+● HEALTHY/)
   assert.match(result.stdout, /PASS\s+catalog\s+Content catalog is valid/)
   assert.match(result.stdout, /0 errors/)

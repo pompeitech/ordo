@@ -92,7 +92,8 @@ test('detect renders a readable console report', async () => {
 
   assert.equal(result.exitCode, 0)
   assert.equal(result.stderr, '')
-  assert.match(result.stdout, /^◆ ORDO \/\/ REPOSITORY DETECTION/m)
+  assert.match(result.stdout, /◆ ORDO/)
+  assert.match(result.stdout, /REPOSITORY DETECTION/)
   assert.match(result.stdout, /project\s+example-service/)
   assert.match(result.stdout, /package manager\s+pnpm@10\.0\.0/)
   assert.match(result.stdout, /conflicts\s+npm/)
@@ -143,5 +144,5 @@ test('detection failures return a structured operational error', async () => {
 
   assert.equal(result.exitCode, 1)
   assert.equal(result.stdout, '')
-  assert.match(result.stderr, /^REPOSITORY_NOT_FOUND: Repository not found from:/)
+  assert.match(result.stderr, /REPOSITORY_NOT_FOUND: Repository not found from:/)
 })

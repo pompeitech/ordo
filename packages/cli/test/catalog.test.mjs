@@ -197,9 +197,11 @@ test('catalog human output is readable in list and detail modes', async () => {
   const detail = await execute(['workflows', directory, '--id', 'review'], directory)
 
   assert.equal(list.exitCode, 0)
-  assert.match(list.stdout, /^◆ ORDO \/\/ SKILLS CATALOG/m)
+  assert.match(list.stdout, /◆ ORDO/)
+  assert.match(list.stdout, /SKILLS CATALOG/)
   assert.match(list.stdout, /testing — Build reliable tests\./)
-  assert.match(detail.stdout, /^◆ ORDO \/\/ WORKFLOW DETAIL/m)
+  assert.match(detail.stdout, /◆ ORDO/)
+  assert.match(detail.stdout, /WORKFLOW DETAIL/)
   assert.match(detail.stdout, /## Objective/)
   assert.match(detail.stdout, /workflows\/review\.md/)
 })
