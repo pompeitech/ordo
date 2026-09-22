@@ -581,6 +581,10 @@ export async function runCli(
       return 0
     }
 
+    if (command.startsWith('-')) {
+      throw new CliUsageError(`Unknown option: ${command}`)
+    }
+
     if (command === 'detect') {
       const options = parseDetectArguments(args.slice(1), cwd)
       if (options.help) {

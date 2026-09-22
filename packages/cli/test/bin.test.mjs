@@ -39,3 +39,14 @@ test('compiled CLI executes when Node receives a symlinked bin path', async () =
   assert.equal(result.stderr, '')
   assert.equal(result.stdout, '1.0.0\n')
 })
+
+test('global options without a command are reported as options', async () => {
+  const result = await executeFile(process.execPath, [
+    path.join(packageRoot, 'dist', 'bin.js'),
+    '-j'
+  ]).catch(error => error)
+
+  assert.equal(result.stdout, '')
+  assert.match(result.stderr, /Unknown option: -j/)
+  assert.match(result.stderr, /Run "ordo --help" for usage\./)
+})
