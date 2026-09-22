@@ -1,0 +1,9 @@
+{
+  "packageManager": {
+    "status": "detected",
+    "selected": "pnpm",
+    "version": "10.0.0",
+    "conflicts": []
+  },
+  "technologies": ["fastify", "mongodb", "nodejs", "typescript", "vitest"]
+}

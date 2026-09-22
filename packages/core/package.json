@@ -1,0 +1,38 @@
+{
+  "name": "@pompeitech/ordo-core",
+  "version": "1.0.0",
+  "author": {
+    "name": "Davide D'Antonio",
+    "email": "davide.dantonio1984@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pompeitech/ordo.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/pompeitech/ordo#readme",
+  "bugs": {
+    "url": "https://github.com/pompeitech/ordo/issues"
+  },
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "biome check src test",
+    "test": "pnpm run build && node --test test/config-catalog.test.mjs test/detection.test.mjs test/doctor.test.mjs test/documentation-fixtures.test.mjs test/installation.test.mjs test/repository-content.test.mjs test/workflows-decisions.test.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

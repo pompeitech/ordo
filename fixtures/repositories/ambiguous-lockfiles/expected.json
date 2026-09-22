@@ -1,0 +1,9 @@
+{
+  "packageManager": {
+    "status": "ambiguous",
+    "selected": null,
+    "version": null,
+    "conflicts": ["pnpm", "yarn"]
+  },
+  "technologies": ["javascript", "nodejs"]
+}

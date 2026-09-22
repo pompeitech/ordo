@@ -1,0 +1,53 @@
+{
+  "name": "@pomepitech/ordo",
+  "version": "1.0.0",
+  "description": "Deterministic agent-engineering harness for Claude Code and Codex.",
+  "author": {
+    "name": "Davide D'Antonio",
+    "email": "davide.dantonio1984@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pompeitech/ordo.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/pompeitech/ordo#readme",
+  "bugs": {
+    "url": "https://github.com/pompeitech/ordo/issues"
+  },
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "ordo": "dist/bin.js"
+  },
+  "files": [
+    "dist/bin.js",
+    "dist/content"
+  ],
+  "engines": {
+    "node": ">=20.12"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "ai-agents",
+    "claude-code",
+    "codex",
+    "developer-tools"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/build-runtime.mjs",
+    "lint": "biome check scripts src test",
+    "prepack": "pnpm run build",
+    "test": "pnpm --filter @pompeitech/ordo-core build && pnpm --filter @pompeitech/ordo-adapter-claude build && pnpm --filter @pompeitech/ordo-adapter-codex build && pnpm run build && node --test test/bin.test.mjs test/catalog.test.mjs test/detect.test.mjs test/doctor.test.mjs test/init-install.test.mjs test/output.test.mjs test/package.test.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@clack/prompts": "^1.8.1",
+    "@pompeitech/ordo-adapter-claude": "workspace:*",
+    "@pompeitech/ordo-adapter-codex": "workspace:*",
+    "@pompeitech/ordo-core": "workspace:*",
+    "esbuild": "^0.28.2"
+  }
+}

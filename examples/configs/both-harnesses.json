@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "targets": [
+    {
+      "adapter": "claude"
+    },
+    {
+      "adapter": "codex"
+    }
+  ],
+  "installation": {
+    "conflictStrategy": "error",
+    "prune": false
+  }
+}

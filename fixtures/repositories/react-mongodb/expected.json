@@ -1,0 +1,9 @@
+{
+  "packageManager": {
+    "status": "detected",
+    "selected": "npm",
+    "version": null,
+    "conflicts": []
+  },
+  "technologies": ["javascript", "jest", "mongodb", "nodejs", "react", "vite"]
+}

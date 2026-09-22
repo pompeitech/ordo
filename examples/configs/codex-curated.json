@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "targets": [
+    {
+      "adapter": "codex"
+    }
+  ],
+  "content": {
+    "agents": {
+      "include": ["planner", "tdd-guide"]
+    },
+    "rules": {
+      "include": ["common-security", "common-testing", "typescript-coding-style"]
+    },
+    "skills": {
+      "include": ["tdd-workflow", "testing", "verification-loop"]
+    },
+    "workflows": {
+      "include": ["plan", "implement", "review"]
+    }
+  },
+  "installation": {
+    "conflictStrategy": "error",
+    "prune": true
+  }
+}

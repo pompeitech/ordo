@@ -1,0 +1,32 @@
+{
+  "name": "ordo-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Agent engineering harness for coordinating AI-assisted development workflows.",
+  "author": {
+    "name": "Davide D'Antonio",
+    "email": "davide.dantonio1984@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pompeitech/ordo.git"
+  },
+  "homepage": "https://github.com/pompeitech/ordo#readme",
+  "bugs": {
+    "url": "https://github.com/pompeitech/ordo/issues"
+  },
+  "license": "MIT",
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "lint": "pnpm -r --if-present lint",
+    "ordo": "node packages/cli/dist/bin.js",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
