@@ -10,10 +10,10 @@ Ordo separates deterministic domain logic from harness-specific mapping, termina
 ├── @pompeitech/ordo-adapter-codex ───┼──> @pompeitech/ordo-core
 └─────────────────────────────────────┘
 
-@pompeitech/ordo-decision-jev ───────────> @pompeitech/ordo-core
+@pompeitech/ordo-decision-jev (placeholder) ──> @pompeitech/ordo-core
 ```
 
-Source packages use workspace dependencies. The published CLI artifact bundles the core, both adapters, terminal prompts, and canonical catalog into one dependency-free executable. The optional JEV package is not bundled.
+Source packages use workspace dependencies. The published CLI artifact bundles the core, both adapters, terminal prompts, and canonical catalog into one dependency-free executable. The JEV package is an empty workspace placeholder and is not bundled, published, or imported by the CLI. See [Decision providers](decision-providers.md).
 
 ## Core responsibilities
 
@@ -93,7 +93,7 @@ Current CLI behavior installs workflows as harness skills. Native `ordo run` orc
 
 The core contract exposes `choose`, `score`, and `assert`. Rule-based providers are deterministic and return confidence `1`. `resolveDecision()` accepts a threshold and either accepts, applies an explicit fallback, or escalates.
 
-`AuditedDecisionProvider` records request ID, decision kind, value, confidence, provider, and fallback status. A future JEV provider must implement this contract without becoming a core dependency.
+`AuditedDecisionProvider` records request ID, decision kind, value, confidence, provider, and fallback status. A future JEV provider may implement this contract without becoming a core dependency; it is not a supported 1.0 integration.
 
 Probabilistic decisions are appropriate only for unstructured inputs such as intent classification, safety triage, or error classification. Structured repository and installation decisions remain rule-based.
 

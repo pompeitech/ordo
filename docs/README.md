@@ -10,6 +10,7 @@ This directory contains the operational and technical documentation for Ordo. Th
 | [CLI reference](cli-reference.md) | Commands, options, output modes, precedence rules, and exit codes |
 | [Configuration](configuration.md) | Complete `ordo.config.json` schema, defaults, selection rules, and examples |
 | [Catalog authoring](catalog-authoring.md) | Canonical layout and validation requirements for agents, rules, skills, and workflows |
+| [Decision providers](decision-providers.md) | Current JEV status, provider boundaries, and deterministic 1.0 behavior |
 | [Installation safety](installation-safety.md) | Ownership, checksums, conflicts, pruning, atomic writes, and recovery behavior |
 
 ## Maintainer guides
