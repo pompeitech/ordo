@@ -40,7 +40,7 @@
     "build": "tsc -p tsconfig.json && node scripts/build-runtime.mjs",
     "lint": "biome check scripts src test",
     "prepack": "pnpm run build",
-    "test": "pnpm --filter @pompeitech/ordo-core build && pnpm --filter @pompeitech/ordo-adapter-claude build && pnpm --filter @pompeitech/ordo-adapter-codex build && pnpm run build && node --test test/bin.test.mjs test/catalog.test.mjs test/detect.test.mjs test/doctor.test.mjs test/init-install.test.mjs test/output.test.mjs test/package.test.mjs",
+    "test": "pnpm --filter @pompeitech/ordo-core build && pnpm --filter @pompeitech/ordo-adapter-claude build && pnpm --filter @pompeitech/ordo-adapter-codex build && pnpm run build && FORCE_COLOR=0 node --test test/bin.test.mjs test/catalog.test.mjs test/detect.test.mjs test/doctor.test.mjs test/init-install.test.mjs test/output.test.mjs test/package.test.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {

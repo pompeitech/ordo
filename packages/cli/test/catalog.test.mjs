@@ -139,7 +139,7 @@ Findings are reported.
 async function execute(args, cwd) {
   const stdout = captureOutput()
   const stderr = captureOutput()
-  const exitCode = await runCli(args, { cwd, stdout, stderr })
+  const exitCode = await runCli(args, { cwd, stdout, stderr, env: { NO_COLOR: '1' } })
 
   return {
     exitCode,
