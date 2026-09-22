@@ -19,6 +19,8 @@ This directory contains the operational and technical documentation for Ordo. Th
 | [Architecture](architecture.md) | Package boundaries, dependency direction, runtime flows, and extension points |
 | [Release process](release-process.md) | Verification, standalone packaging, smoke testing, versioning, and publication boundaries |
 
+The version history is maintained in the repository [changelog](../CHANGELOG.md). Every published version must have a matching annotated Git tag.
+
 ## Documentation contract
 
 Documentation must distinguish current behavior from planned work. A command, option, path, or package is documented as available only when its implementation and tests exist in the repository.

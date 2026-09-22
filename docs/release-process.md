@@ -1,12 +1,13 @@
 # Release process
 
-This document describes a reproducible release candidate. It does not authorize publishing, tagging, or creating a remote release.
+This document describes a reproducible release candidate. Publishing and remote mutation require explicit authorization, but every release commit must be represented by an annotated Git tag.
 
 ## Preconditions
 
 - The intended version and release scope are explicit.
 - The working tree contains no unexplained generated artifacts.
 - Public behavior and configuration changes are documented.
+- `CHANGELOG.md` has an entry for the exact version and release date.
 - Canonical catalog changes pass validation.
 - Node.js 20.12 or newer and the workspace pnpm version are available.
 
@@ -89,7 +90,40 @@ Before publication, align:
 - changelog or release notes;
 - any schema compatibility statement.
 
+The npm version, changelog heading, Git tag, and GitHub release name must agree:
+
+```text
+package version: 1.0.0
+changelog:       ## [1.0.0] - YYYY-MM-DD
+Git tag:         v1.0.0
+GitHub release:  v1.0.0
+```
+
 Schema versions change only for contract incompatibility and are independent of package semantic versions.
+
+## Commit, tag, and publish
+
+Complete the verification gate first, then create one release commit. Do not tag a dirty tree or tag a commit that is not already on the release branch:
+
+```bash
+VERSION=1.0.0
+git diff --check
+git status --short
+git add CHANGELOG.md package.json packages/cli/package.json README.md docs
+git commit -m "release: v$VERSION"
+git tag -a "v$VERSION" -m "Release v$VERSION"
+git push origin main
+git push origin "v$VERSION"
+```
+
+After the tag is pushed, create the GitHub release from that tag and copy the matching changelog section into its notes. Only then publish the npm artifact:
+
+```bash
+cd packages/cli
+npm publish --access public
+```
+
+Never move or reuse a published tag. A correction requires a new patch version, a new changelog entry, a new annotated tag, and a new npm publication.
 
 ## Publication boundary
 

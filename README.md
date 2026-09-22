@@ -179,6 +179,7 @@ npm publish --access public
 - [Configuration](docs/configuration.md)
 - [Installation safety](docs/installation-safety.md)
 - [Release process](docs/release-process.md)
+- [Changelog](CHANGELOG.md)
 - [Issue tracker](https://github.com/pompeitech/ordo/issues)
 
 ## License
