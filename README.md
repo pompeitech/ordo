@@ -180,6 +180,9 @@ npm publish --access public
 - [Installation safety](docs/installation-safety.md)
 - [Release process](docs/release-process.md)
 - [Changelog](CHANGELOG.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [License](LICENSE)
 - [Issue tracker](https://github.com/pompeitech/ordo/issues)
 
 ## License

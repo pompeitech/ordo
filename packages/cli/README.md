@@ -42,3 +42,5 @@ ordo doctor
 Use `--json` for automation and `ordo install --dry-run` to preview changes. Existing unmanaged files are protected by default and Ordo does not manage model runtimes.
 
 Full documentation: [github.com/pompeitech/ordo](https://github.com/pompeitech/ordo).
+
+Community guidelines, security reporting, changelog, and license: [CONTRIBUTING.md](https://github.com/pompeitech/ordo/blob/main/CONTRIBUTING.md), [SECURITY.md](https://github.com/pompeitech/ordo/blob/main/SECURITY.md), [CHANGELOG.md](https://github.com/pompeitech/ordo/blob/main/CHANGELOG.md), and [LICENSE](https://github.com/pompeitech/ordo/blob/main/LICENSE).
