@@ -125,6 +125,31 @@ npm publish --access public
 
 Never move or reuse a published tag. A correction requires a new patch version, a new changelog entry, a new annotated tag, and a new npm publication.
 
+## Automated npm publication
+
+The repository contains [`.github/workflows/release.yml`](../.github/workflows/release.yml). It runs only for annotated semver tags matching `vX.Y.Z` and performs the following checks before publishing:
+
+1. installs the frozen workspace lockfile;
+2. verifies that the tag matches `packages/cli/package.json`;
+3. runs lint, typecheck, CLI tests, and the workspace build;
+4. publishes `@pomepitech/ordo` from `packages/cli` with npm provenance.
+
+Configure the repository before the first automated release:
+
+- create an npm access token with permission to publish `@pomepitech/ordo`;
+- add it as the repository or `npm` environment secret named `NPM_TOKEN`;
+- protect the `npm` environment with an approval rule if releases require manual approval;
+- enable npm provenance/trusted publishing for the repository when available.
+
+The workflow never runs for ordinary branch pushes. A release is published by pushing a new annotated tag after the release commit:
+
+```bash
+git push origin main
+git push origin v1.0.0
+```
+
+The tag must not already exist on npm. If the verification job fails, no npm publication is attempted.
+
 ## Publication boundary
 
 Publishing is an external, irreversible action. Stop after producing and verifying the tarball unless the user explicitly authorizes registry authentication and publication.

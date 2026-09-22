@@ -172,6 +172,8 @@ pnpm pack
 npm publish --access public
 ```
 
+For the repository release path, push an annotated `vX.Y.Z` tag after the release commit. GitHub Actions validates the tag and publishes the matching package automatically; configure the `NPM_TOKEN` environment secret first. See the [release process](docs/release-process.md).
+
 ## Links
 
 - [Documentation](docs/README.md)
