@@ -12,7 +12,6 @@ Unknown properties are rejected. This is intentional: a misspelled safety option
   "targets": [
     { "adapter": "claude" },
     { "adapter": "codex" },
-    { "adapter": "minicpm" }
   ],
   "contentRoot": "/opt/ordo/content",
   "content": {
@@ -41,7 +40,7 @@ Unknown properties are rejected. This is intentional: a misspelled safety option
 | Property | Required | Meaning |
 | --- | --- | --- |
 | `schemaVersion` | Yes | Must be the integer `1` |
-| `targets` | Yes | Claude, Codex, and/or MiniCPM installation targets |
+| `targets` | Yes | One or both supported harness targets |
 | `contentRoot` | No | Absolute path or path relative to the repository root |
 | `content` | No | Per-category include or exclude filters |
 | `installation` | No | Conflict and stale-file policy |
@@ -57,7 +56,7 @@ Each target accepts:
 }
 ```
 
-`adapter` must be `claude`, `codex`, or `minicpm`. Each adapter may appear at most once.
+`adapter` must be `claude` or `codex`. Each adapter may appear at most once.
 
 `outputDirectory` is optional. It must be relative, non-empty, and remain inside the repository. Absolute paths and `..` traversal are rejected. When omitted, the adapter uses its native repository layout.
 

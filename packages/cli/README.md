@@ -1,6 +1,15 @@
 # @pomepitech/ordo
 
-Ordo is a deterministic CLI for coordinating Claude Code and Codex repositories.
+```text
+   ██████╗        ██████╗ ██████╗ ██████╗  ██████╗
+  ██╔═══██╗      ██╔═══██╗██╔══██╗██╔══██╗██╔═══██╗
+  ██║ █ ██║      ██║   ██║██████╔╝██║  ██║██║   ██║
+  ██║   ██║      ██║   ██║██╔══██╗██║  ██║██║   ██║
+  ╚██████╔╝      ╚██████╔╝██║  ██║██████╔╝╚██████╔╝
+   ╚═════╝        ╚═════╝ ╚═╝  ╚═╝╚═════╝  ╚═════╝
+```
+
+Deterministic content and workflow management for Claude Code and Codex.
 
 ## Install
 
@@ -8,15 +17,14 @@ Ordo is a deterministic CLI for coordinating Claude Code and Codex repositories.
 npm install -g @pomepitech/ordo
 ```
 
-## Initialize a repository
+## Quick start
 
 ```bash
-ordo init --adapter claude --adapter codex
+ordo init
+ordo install --dry-run
 ordo install
 ordo doctor
 ```
-
-The interactive wizard supports Claude Code, Codex, content selection, conflict policy, and safe installation. Ordo does not install, manage, or run local/open models.
 
 ## Commands
 
@@ -31,4 +39,6 @@ The interactive wizard supports Claude Code, Codex, content selection, conflict 
 | `ordo skills` | Inspect catalog skills |
 | `ordo workflows` | Inspect catalog workflows |
 
-Claude Code and Codex remain the supported integrations. Existing repositories containing legacy local-model files are no longer managed by Ordo.
+Use `--json` for automation and `ordo install --dry-run` to preview changes. Existing unmanaged files are protected by default and Ordo does not manage model runtimes.
+
+Full documentation: [github.com/pompeitech/ordo](https://github.com/pompeitech/ordo).

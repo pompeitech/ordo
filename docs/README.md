@@ -34,10 +34,9 @@ Ordo 1.0 provides a deterministic core and CLI for:
 - repository, package-manager, stack, and harness detection;
 - canonical catalog loading, selection, and validation;
 - interactive and non-interactive repository initialization;
-- Claude Code, Codex, and MiniCPM installation planning and application;
+- Claude Code and Codex installation planning and application;
 - ownership-aware updates, conflict handling, pruning, and dry runs;
-- a colorized MiniCPM terminal coding agent with managed Docker models, persistent sessions, repository tools, and automatic context compaction;
 - diagnostics and catalog inspection;
 - rule-based decision contracts and a programmatic workflow engine.
 
-The standalone CLI includes its runtime and canonical content catalog. JEV integration, decision evaluation commands, and native workflow execution from the CLI remain outside the current implemented boundary.
+The standalone CLI includes its runtime and canonical content catalog. Local/open model runtimes, model downloads, Docker orchestration, JEV integration, decision evaluation commands, and native workflow execution from the CLI remain outside the 1.0 boundary.
