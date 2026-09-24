@@ -19,6 +19,7 @@ This directory contains the operational and technical documentation for Ordo. Th
 | --- | --- |
 | [Architecture](architecture.md) | Package boundaries, dependency direction, runtime flows, and extension points |
 | [Release process](release-process.md) | Verification, standalone packaging, smoke testing, versioning, and publication boundaries |
+| [Knotic-inspired requirements](knotic-inspired-requirements.md) | Product requirements for shared project memory, versioned artifacts, governed AI workflows, and team context |
 
 The version history is maintained in the repository [changelog](../CHANGELOG.md). Every published version must have a matching annotated Git tag.
 

@@ -1,53 +1,60 @@
 # Ordo roadmap
 
-This roadmap records the intended product direction. It is guidance, not a promise of delivery dates. Every item remains subject to scope, tests, security review, and compatibility work.
+Ordo is becoming a governed AI engineering workspace: repository-local knowledge, inspectable context, provider-neutral sessions, structured decision work, staged execution, and team-visible operations. See [Product vision](docs/product-vision.md) for the target operating model and invariants.
 
 ## 1.0.x — Stabilization
 
-Patch releases must preserve the 1.0 public behavior and configuration schema.
+- Keep the published installer and Claude Code/Codex adapters stable.
+- Keep clean-runner release, tarball, lint, typecheck, and test gates green.
+- Resolve packaging, diagnostics, and documentation regressions without changing the 1.0 configuration contract.
 
-### 1.0.2
+## 1.1.0 — Project memory and Context
 
-- Fix the `ambiguous-lockfiles` repository fixture and keep the full workspace test suite green.
-- Harden release workflows on clean GitHub runners.
-- Improve CLI error messages and invalid-option handling.
-- Verify the globally installed tarball in an isolated npm prefix.
-- Close documentation and packaging inconsistencies found after the first publication.
+- Repository-local `.ordo/brain.md` project memory.
+- Versioned context index with safe tracked-file references.
+- `ordo context init/add/hide/show/remove`.
+- Exact context preview with source attribution and token estimates.
+- Context snapshots with content hashes and reproducible payload assembly.
+- Context policies for rules, skills, attachments, and session state.
+- Documented `minimal`, `standard`, and `full` catalog profiles.
 
-## 1.1.0 — Profiles and efficient configuration
+The first CLI vertical slice is implemented; snapshots, policy composition, and harness consumption remain.
 
-The first feature release focused on making Ordo easier to adopt and cheaper in context usage.
+## 1.2.0 — Sessions and provider runtime
 
-- Add documented `minimal`, `standard`, and `full` content presets.
-- Provide a low-token profile with only routing, coding standards, testing, verification, and review guidance.
-- Add `ordo config validate` for explicit configuration diagnostics.
-- Make `ordo init` selection and configuration editing easier to understand.
-- Select optional rules and skills from detected repository stack evidence without silently changing user files.
-- Improve Claude Code and Codex target validation and human-readable output.
+- Provider-neutral request, response, streaming, usage, and error contracts.
+- OpenAI, Anthropic, OpenRouter, GitHub, and local OpenAI-compatible providers.
+- Persistent append-only session event logs and resumable conversations.
+- Repository tools, diffs, scoped approvals, and MCP bridge.
+- Context compaction with visible summaries and preserved provenance.
+- Headless `ordo session` commands and stable APIs for interactive clients.
 
-## 1.2.0 — Catalog distribution and repository scale
+## 1.3.0 — Explore and specifications
 
-- Improve distribution and versioning of custom catalogs.
-- Add preview and diff support when updating an installed catalog.
-- Support versioned remote catalogs only with explicit, auditable configuration.
-- Improve monorepo detection and installation boundaries.
-- Add adapter capabilities only when the target harness contract and safety behavior are well tested.
+- Read-only intent, divergence, simulation, convergence, and crystallization phases.
+- Alternative branches with explicit trade-offs and user selection.
+- Approved specifications stored under `.ordo/specs/`.
+- Direct handoff from an approved spec into Architect.
 
-## 2.0.0 — Optional architectural extensions
+## 1.4.0 — Architect
 
-Reserve a major release for deliberate compatibility changes, such as:
+- Persistent plans containing phases and explicit steps.
+- Step states: pending, running, paused, completed, cancelled, skipped, and error.
+- One linked execution session and diff summary per step.
+- Review gates, reorder, reset, retry, pause, and resume.
+- `ordo plan` and `ordo run` automation with machine-readable events.
 
-- a new configuration schema or migration mechanism;
-- a public plugin and adapter API;
-- a fully implemented optional JEV decision provider;
-- native workflow execution from Ordo;
-- a redesigned ownership or installation model.
+## 2.0.0 — Team workspace
 
-Local/open model runtimes and model downloads are not part of the current product direction. Ordo remains focused on deterministic catalog management, safe installation, and Claude Code/Codex integration.
+- Desktop or VS Code-compatible UI with Sessions, Context, Explore, Architect, and Control Center.
+- Provider/model configuration backed by secure credential storage.
+- Skills, MCP server lifecycle, tool explorer, policies, monitoring, usage, and audit views.
+- Team policy packs and portable repository configuration.
+- Migration tooling for any incompatible schema or ownership changes.
 
 ## Release policy
 
 - Patch releases fix regressions without changing the public contract.
 - Minor releases add backward-compatible capabilities.
-- Major releases are required for incompatible schema, adapter, or installation changes.
+- Major releases are reserved for incompatible schema, runtime, adapter, or installation changes.
 - Every release updates [`CHANGELOG.md`](CHANGELOG.md), passes the [release verification gate](docs/release-process.md), and receives an annotated `vX.Y.Z` Git tag.
