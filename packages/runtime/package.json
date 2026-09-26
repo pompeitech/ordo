@@ -1,0 +1,28 @@
+{
+  "name": "@pompeitech/ordo-runtime",
+  "version": "2.0.0-dev.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "biome check src test",
+    "test": "pnpm --filter @pompeitech/ordo-core build && pnpm run build && node --test test/runtime.test.mjs test/claude-code.test.mjs test/codex-app-server.test.mjs test/connection.test.mjs test/usage.test.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@pompeitech/ordo-core": "workspace:*"
+  }
+}
