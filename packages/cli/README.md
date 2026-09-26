@@ -34,6 +34,7 @@ ordo doctor
 | `ordo install` | Install selected catalog content |
 | `ordo doctor` | Validate configuration and targets |
 | `ordo detect` | Inspect repository and harnesses |
+| `ordo agent <claude|codex>` | Execute a ready spec/plan step through the local Claude Code CLI or Codex app-server with shared profile and context |
 | `ordo agents` | Inspect catalog agents |
 | `ordo rules` | Inspect catalog rules |
 | `ordo skills` | Inspect catalog skills |

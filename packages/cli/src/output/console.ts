@@ -1,12 +1,263 @@
-import type { DoctorReport } from '@pompeitech/ordo-core'
+import type {
+  ContextPreviewReport,
+  ContextReport,
+  ContextSnapshotReport,
+  DoctorReport,
+  TrailEntry,
+  WorkflowItem
+} from '@pompeitech/ordo-core'
+import type { ArchitectReport } from '../commands/architect.js'
+import type { BrainstormReport } from '../commands/brainstorm.js'
 import type { CatalogInspectionReport } from '../commands/catalog.js'
 import type { DetectReport } from '../commands/detect.js'
 import type { InitReport } from '../commands/init.js'
 import type { InstallReport } from '../commands/install.js'
+import type { PlanCommandReport } from '../commands/plan.js'
+import type { ProfileCommandReport } from '../commands/profile.js'
+import type { SessionCommandReport } from '../commands/session.js'
+import type { SpecCommandReport } from '../commands/spec.js'
+import type { StatusReport } from '../commands/status.js'
 import { createOutputTheme, type OutputTheme } from './theme.js'
 
 export interface OutputFormatOptions {
   readonly color?: boolean
+}
+
+export function formatArchitectReport(
+  report: ArchitectReport,
+  options: OutputFormatOptions = {}
+): string {
+  const theme = createOutputTheme(options.color ?? false)
+  if (report.action === 'list') {
+    return [
+      theme.brand('architecture proposals'),
+      '',
+      ...(report.proposals.length > 0
+        ? report.proposals.map(
+            item =>
+              `  ${theme.info('◆')} ${theme.strong(item.id.padEnd(24))}${item.status}  ${item.title}`
+          )
+        : [`  ${theme.muted('○ no architecture proposals')}`]),
+      ''
+    ].join('\n')
+  }
+  const item = report.proposal
+  const list = (values: readonly string[]) =>
+    values.length > 0 ? values.map(value => `  • ${value}`) : [`  ${theme.muted('○ none')}`]
+  return [
+    theme.brand(`architect ${report.action}`),
+    '',
+    field(theme, 'id', item.id),
+    field(theme, 'spec', item.specId),
+    field(theme, 'status', item.status === 'approved' ? theme.success(item.status) : item.status),
+    field(theme, 'mode', report.dryRun ? theme.info('DRY RUN') : theme.success('PERSISTED')),
+    '',
+    theme.section('impact'),
+    ...list(item.impact),
+    '',
+    theme.section('components'),
+    ...item.components.map(
+      component =>
+        `  ${theme.info('◆')} ${theme.strong(component.name)} — ${component.responsibility}${
+          component.changes.length > 0
+            ? `\n    ${theme.muted(`changes: ${component.changes.join('; ')}`)}`
+            : ''
+        }`
+    ),
+    '',
+    theme.section('contracts'),
+    ...list(item.contracts),
+    '',
+    theme.section('decisions'),
+    ...list(item.decisions),
+    '',
+    theme.section('risks'),
+    ...list(item.risks),
+    ...(item.status === 'proposed' && !report.dryRun
+      ? ['', theme.muted(`  Human approval required: ordo architect approve ${item.id}`)]
+      : []),
+    ''
+  ].join('\n')
+}
+
+export function formatBrainstormReport(
+  report: BrainstormReport,
+  options: OutputFormatOptions = {}
+): string {
+  const theme = createOutputTheme(options.color ?? false)
+  if (report.action === 'list') {
+    return [
+      theme.brand('explore'),
+      '',
+      ...(report.explorations.length > 0
+        ? report.explorations.map(
+            item =>
+              `  ${theme.info('◆')} ${theme.strong(item.id.padEnd(24))}${item.status}  ${item.title}`
+          )
+        : [`  ${theme.muted('○ no explorations')}`]),
+      ''
+    ].join('\n')
+  }
+  const item = report.exploration
+  const alternatives = item.alternatives.map(alternative => {
+    const selected = alternative.id === item.selectedAlternativeId
+    return `  ${selected ? theme.success('●') : theme.muted('○')} ${theme.strong(alternative.id)} — ${alternative.summary}\n    ${theme.muted(`trade-offs: ${alternative.tradeoffs.join('; ')}`)}`
+  })
+  return [
+    theme.brand(`brainstorm ${report.action}`),
+    '',
+    field(theme, 'id', item.id),
+    field(theme, 'status', item.status),
+    field(theme, 'mode', report.dryRun ? theme.info('DRY RUN') : theme.success('PERSISTED')),
+    field(theme, 'spec', report.spec?.id ?? item.specId ?? 'not crystallized'),
+    '',
+    theme.section('problem'),
+    `  ${item.problem}`,
+    '',
+    theme.section('alternatives'),
+    ...(alternatives.length > 0 ? alternatives : [`  ${theme.muted('○ none yet')}`]),
+    ''
+  ].join('\n')
+}
+
+export function formatSpecReport(
+  report: SpecCommandReport,
+  options: OutputFormatOptions = {}
+): string {
+  const theme = createOutputTheme(options.color ?? false)
+  if (report.action === 'list') {
+    return [
+      theme.brand('specifications'),
+      '',
+      ...(report.specs.length > 0
+        ? report.specs.map(
+            spec =>
+              `  ${theme.info('◆')} ${theme.strong(spec.id.padEnd(24))}${spec.status}  ${spec.title}`
+          )
+        : [`  ${theme.muted('○ no specifications')}`]),
+      ''
+    ].join('\n')
+  }
+  if (report.action === 'validate') {
+    return [
+      theme.brand('spec validation'),
+      '',
+      field(
+        theme,
+        'status',
+        report.validation.valid ? theme.success('VALID') : theme.danger('INVALID')
+      ),
+      ...(report.validation.errors.length > 0
+        ? ['', ...report.validation.errors.map(error => `  ${theme.danger('×')} ${error}`)]
+        : []),
+      ''
+    ].join('\n')
+  }
+  return [
+    theme.brand(`spec ${report.action}`),
+    '',
+    field(theme, 'id', report.spec.id),
+    field(theme, 'title', report.spec.title),
+    field(theme, 'status', report.spec.status),
+    field(theme, 'path', report.spec.path),
+    field(theme, 'mode', report.dryRun ? theme.info('DRY RUN') : theme.success('WRITTEN')),
+    '',
+    theme.section('objective'),
+    `  ${report.spec.objective}`,
+    '',
+    theme.section('acceptance criteria'),
+    `  ${report.spec.acceptanceCriteria.replaceAll('\n', '\n  ')}`,
+    ''
+  ].join('\n')
+}
+
+export function formatPlanReport(
+  report: PlanCommandReport,
+  options: OutputFormatOptions = {}
+): string {
+  const theme = createOutputTheme(options.color ?? false)
+  if (report.action === 'list') {
+    return [
+      theme.brand('plans'),
+      '',
+      ...(report.plans.length > 0
+        ? report.plans.map(
+            plan =>
+              `  ${theme.info('◆')} ${theme.strong(plan.id.padEnd(24))}${plan.status}  ${plan.title}`
+          )
+        : [`  ${theme.muted('○ no plans')}`]),
+      ''
+    ].join('\n')
+  }
+  if (report.action === 'changes') {
+    const { changes } = report
+    const marks = { added: '+', modified: '~', deleted: '-' } as const
+    const lines = changes.available
+      ? changes.files.length > 0
+        ? changes.files.map(file => {
+            const counts =
+              file.additions === undefined
+                ? theme.muted('binary')
+                : `${theme.success(`+${file.additions}`)} ${theme.danger(`-${file.deletions}`)}`
+            return `  ${marks[file.change]} ${file.path}  ${counts}`
+          })
+        : [`  ${theme.muted('○ the agent changed no files')}`]
+      : [`  ${theme.muted(`○ no diff: ${changes.reason}`)}`]
+    return [
+      theme.brand(`changes · ${report.planId} / ${report.stepId}`),
+      '',
+      ...lines,
+      '',
+      ...(changes.available && changes.files.length > 0
+        ? [
+            theme.muted(
+              `  Undo files with: ordo plan review ${report.planId} --step-id ${report.stepId} --decision <decision> --reject <path>`
+            ),
+            ''
+          ]
+        : []),
+      ...(report.diff ? [report.diff] : [])
+    ].join('\n')
+  }
+  if (report.action === 'validate') {
+    return [
+      theme.brand('plan validation'),
+      '',
+      field(
+        theme,
+        'status',
+        report.validation.valid ? theme.success('VALID') : theme.danger('INVALID')
+      ),
+      ...(report.validation.errors.length > 0
+        ? ['', ...report.validation.errors.map(error => `  ${theme.danger('×')} ${error}`)]
+        : []),
+      ''
+    ].join('\n')
+  }
+  const steps = report.plan.steps.map(step => {
+    const marker =
+      step.status === 'completed'
+        ? theme.success('✓')
+        : step.status === 'running'
+          ? theme.info('●')
+          : theme.muted('○')
+    const dependencies =
+      step.dependsOn.length > 0 ? theme.muted(` ← ${step.dependsOn.join(', ')}`) : ''
+    return `  ${marker} ${theme.strong(step.id.padEnd(18))}${step.status.padEnd(12)}${step.description}${dependencies}`
+  })
+  return [
+    theme.brand(`plan ${report.action}`),
+    '',
+    field(theme, 'id', report.plan.id),
+    field(theme, 'spec', report.plan.specId),
+    field(theme, 'status', report.plan.status),
+    field(theme, 'mode', report.dryRun ? theme.info('DRY RUN') : theme.success('PERSISTED')),
+    ...(report.selectedStepId ? [field(theme, 'selected step', report.selectedStepId)] : []),
+    '',
+    theme.section('steps'),
+    ...steps,
+    ''
+  ].join('\n')
 }
 
 function field(theme: OutputTheme, label: string, value: string): string {
@@ -317,6 +568,295 @@ export function formatCatalogReport(
     '',
     theme.section('catalog'),
     ...(entries.length > 0 ? entries : [`  ${theme.muted('○ empty')}`]),
+    ''
+  ].join('\n')
+}
+
+export function formatContextReport(
+  report: ContextReport | ContextPreviewReport | ContextSnapshotReport,
+  options: OutputFormatOptions = {}
+): string {
+  const theme = createOutputTheme(options.color ?? false)
+  const entries = report.entries.map(entry => {
+    const marker = !entry.exists
+      ? theme.danger('×')
+      : entry.visibility === 'visible'
+        ? theme.success('●')
+        : theme.muted('○')
+    const status = !entry.exists ? 'missing' : entry.visibility
+    return `  ${marker} ${theme.strong(entry.id)} ${theme.muted(`// ${status} · ~${entry.estimatedTokens} tokens · ${entry.path}`)}`
+  })
+  const preview =
+    report.command === 'context-preview' || report.command === 'context-snapshot'
+      ? [
+          '',
+          theme.section(`payload // ${report.blocks.length} blocks`),
+          '',
+          report.payload || theme.muted('  ○ empty')
+        ]
+      : []
+
+  return [
+    theme.brand(
+      report.command === 'context-preview'
+        ? 'context preview'
+        : report.command === 'context-snapshot'
+          ? 'context snapshot'
+          : 'project context'
+    ),
+    '',
+    field(theme, 'repository', report.repositoryRoot),
+    field(theme, 'memory', report.brainPath),
+    field(theme, 'manifest', report.manifestPath),
+    field(theme, 'initialized', report.initialized ? 'yes' : 'no'),
+    field(theme, 'token estimate', `~${report.summary.estimatedTokens}`),
+    '',
+    theme.section('context entries'),
+    ...(entries.length > 0 ? entries : [`  ${theme.muted('○ no tracked files')}`]),
+    '',
+    theme.section('summary'),
+    `  ${summary(theme, [
+      ['visible', report.summary.visible, 'success'],
+      ['hidden', report.summary.hidden, 'muted'],
+      ['missing', report.summary.missing, 'danger']
+    ])}`,
+    ...(report.command === 'context-snapshot'
+      ? [
+          '',
+          theme.section('snapshot'),
+          field(theme, 'id', report.snapshot.id),
+          field(theme, 'path', report.snapshotPath),
+          field(theme, 'status', report.created ? 'created' : 'reused')
+        ]
+      : []),
+    ...preview,
+    ''
+  ].join('\n')
+}
+
+export function formatSessionReport(
+  report: SessionCommandReport,
+  options: OutputFormatOptions = {}
+): string {
+  const theme = createOutputTheme(options.color ?? false)
+  if (report.command === 'session-run') {
+    return [
+      theme.brand('session run'),
+      '',
+      field(theme, 'session', report.session.id),
+      field(theme, 'provider', report.session.runtime?.provider ?? 'unknown'),
+      field(theme, 'model', report.session.runtime?.model ?? 'unknown'),
+      field(theme, 'snapshot', report.contextSnapshotId),
+      field(theme, 'tool iterations', String(report.toolIterations)),
+      field(theme, 'tokens', String(report.usage.totalTokens ?? 'unknown')),
+      '',
+      theme.section('response'),
+      '',
+      report.text || theme.muted('  ○ empty'),
+      ''
+    ].join('\n')
+  }
+  if (report.command === 'session-list') {
+    const sessions = report.sessions.map(
+      session =>
+        `  ${theme.success('●')} ${theme.strong(session.title)} ${theme.muted(`// ${session.status} · ${session.id}`)}`
+    )
+    return [
+      theme.brand('sessions'),
+      '',
+      field(theme, 'repository', report.repositoryRoot),
+      field(theme, 'sessions', String(report.sessions.length)),
+      '',
+      theme.section('history'),
+      ...(sessions.length > 0 ? sessions : [`  ${theme.muted('○ no sessions')}`]),
+      ''
+    ].join('\n')
+  }
+
+  const session = report.session
+  const events =
+    'events' in report
+      ? report.events.map(
+          event =>
+            `  ${theme.info(String(event.sequence).padStart(3, '0'))} ${theme.strong(event.type)} ${theme.muted(event.timestamp)}`
+        )
+      : []
+  return [
+    theme.brand(report.command.replace('-', ' ')),
+    '',
+    field(theme, 'repository', report.repositoryRoot),
+    field(theme, 'id', session.id),
+    field(theme, 'title', session.title),
+    field(theme, 'status', session.status),
+    field(
+      theme,
+      'runtime',
+      session.runtime ? `${session.runtime.provider}/${session.runtime.model}` : 'not selected'
+    ),
+    ...(session.profileSelection
+      ? [
+          field(theme, 'agent', session.profileSelection.agent?.id ?? 'not selected'),
+          field(
+            theme,
+            'skills',
+            session.profileSelection.skills.map(skill => skill.id).join(', ') || 'none'
+          ),
+          field(theme, 'profile', session.profileSelection.profileSha256)
+        ]
+      : []),
+    field(theme, 'context', session.contextSnapshotId ?? 'not linked'),
+    field(theme, 'updated', session.updatedAt),
+    ...('events' in report
+      ? ['', theme.section(`events // ${report.events.length}`), ...events]
+      : []),
+    ''
+  ].join('\n')
+}
+
+export function formatProfileReport(
+  report: ProfileCommandReport,
+  options: OutputFormatOptions = {}
+): string {
+  const theme = createOutputTheme(options.color ?? false)
+  const rows = (kind: 'agents' | 'rules' | 'skills' | 'workflows') =>
+    report.profile[kind].length > 0
+      ? report.profile[kind].map(
+          entry => `  ${theme.info('◆')} ${entry.id.padEnd(24)}${entry.mode}`
+        )
+      : [`  ${theme.muted('○ none configured')}`]
+  return [
+    theme.brand(`profile ${report.command.replace('profile-', '')}`),
+    '',
+    field(theme, 'repository', report.repositoryRoot),
+    field(theme, 'catalog', report.contentRoot),
+    field(theme, 'schema', String(report.profile.schemaVersion)),
+    field(theme, 'catalog hash', report.profile.catalogSha256),
+    field(theme, 'mode', report.dryRun ? theme.info('DRY RUN') : theme.success('PERSISTED')),
+    ...(report.valid === undefined ? [] : [field(theme, 'valid', report.valid ? 'yes' : 'no')]),
+    ...(['agents', 'skills', 'rules', 'workflows'] as const).flatMap(kind => [
+      '',
+      theme.section(kind),
+      ...rows(kind)
+    ]),
+    ...(report.errors && report.errors.length > 0
+      ? [
+          '',
+          theme.section('validation errors'),
+          ...report.errors.map(error => `  ${theme.danger(error)}`)
+        ]
+      : []),
+    ''
+  ].join('\n')
+}
+
+const PHASE_MARKS: Readonly<
+  Record<WorkflowItem['phases'][number]['state'], readonly [string, keyof OutputTheme]>
+> = {
+  done: ['✔', 'success'],
+  'in-progress': ['◐', 'info'],
+  blocked: ['×', 'danger'],
+  'not-started': ['○', 'muted'],
+  skipped: ['–', 'muted'],
+  unavailable: ['·', 'muted']
+}
+
+function formatWorkflowItem(theme: OutputTheme, item: WorkflowItem): readonly string[] {
+  const phases = item.phases
+    .map(phase => {
+      const [mark, tone] = PHASE_MARKS[phase.state]
+      const paint = theme[tone] as (value: string) => string
+      return paint(`${mark} ${phase.phase}`)
+    })
+    .join('  ')
+  const current = item.phases.find(phase => phase.phase === item.currentPhase)
+  const detail = current
+    ? [
+        current.summary,
+        current.blockedBy ? `blocked: ${current.blockedBy}` : undefined,
+        current.nextAction ? `next: ${current.nextAction.label}` : undefined
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : 'every available phase is complete'
+  const tokens = item.tokens
+    ? `  ${theme.muted(`${formatTokens(item.tokens.total)}${item.tokens.unmeasuredSessions ? ` + ${item.tokens.unmeasuredSessions} run(s) not measured` : ''}`)}`
+    : ''
+  return [
+    `  ${theme.strong(item.title)}  ${theme.muted(item.key)}${tokens}`,
+    `    ${phases}`,
+    `    ${theme.accent('→')} ${current ? `${current.phase}: ` : ''}${detail}`,
+    ''
+  ]
+}
+
+const CATEGORY_MARKS: Readonly<Record<TrailEntry['category'], string>> = {
+  decision: '👤',
+  agent: '🤖',
+  system: '⚙️',
+  activity: '·'
+}
+
+function formatTokens(value: number): string {
+  return `${value.toLocaleString('en-US')} tokens`
+}
+
+function formatTrailEntry(theme: OutputTheme, entry: TrailEntry): readonly string[] {
+  const when = entry.at.replace('T', ' ').slice(0, 16)
+  const origin = [
+    entry.actor,
+    entry.source === 'artifact'
+      ? `artifact${entry.approximate ? ', approximate time' : ''}`
+      : undefined
+  ]
+    .filter(Boolean)
+    .join(' · ')
+  const tokens =
+    entry.category === 'agent'
+      ? entry.tokens
+        ? `  ${entry.mostExpensive ? theme.warning(`${formatTokens(entry.tokens.total)} · most tokens`) : theme.muted(formatTokens(entry.tokens.total))}`
+        : `  ${theme.muted('tokens not measured')}`
+      : ''
+  const title = entry.category === 'decision' ? theme.strong(entry.title) : entry.title
+  return [
+    `  ${theme.muted(when)}  ${CATEGORY_MARKS[entry.category]} ${theme.info(entry.phase.padEnd(10))} ${title}${tokens}  ${theme.muted(origin)}`,
+    ...(entry.detail ? [`${' '.repeat(33)}${theme.muted(entry.detail)}`] : []),
+    ...(entry.files
+      ? [
+          `${' '.repeat(33)}${theme.muted(`kept ${entry.files.accepted.length} file(s)${entry.files.rejected.length ? ` · undone: ${entry.files.rejected.join(', ')}` : ''}`)}`
+        ]
+      : []),
+    ...(entry.rejected ?? []).map(
+      option =>
+        `${' '.repeat(33)}${theme.muted(`not chosen: ${option.title}${option.tradeoffs.length ? ` (${option.tradeoffs.join('; ')})` : ''}`)}`
+    )
+  ]
+}
+
+export function formatStatusReport(
+  report: StatusReport,
+  options: OutputFormatOptions = {}
+): string {
+  const theme = createOutputTheme(options.color ?? false)
+  if (report.command === 'status-trail') {
+    return [
+      theme.brand(`decision trail · ${report.trail.title}`),
+      '',
+      ...(report.trail.entries.length > 0
+        ? report.trail.entries.flatMap(entry => formatTrailEntry(theme, entry))
+        : [`  ${theme.muted('○ no recorded history')}`]),
+      '',
+      `  ${theme.muted('👤 human decision  🤖 agent  ⚙️ Ordo  · recorded activity')}`,
+      `  ${theme.muted(`agent tokens: ${formatTokens(report.trail.tokens.total)}${report.trail.tokens.unmeasuredSessions ? `, ${report.trail.tokens.unmeasuredSessions} run(s) not measured` : ''}`)}`,
+      ''
+    ].join('\n')
+  }
+  return [
+    theme.brand('workflow'),
+    '',
+    ...(report.items.length > 0
+      ? report.items.flatMap(item => formatWorkflowItem(theme, item))
+      : [`  ${theme.muted('○ no requirements or explorations yet')}`, '']),
+    `  ${theme.muted('✔ done  ◐ in progress  × blocked  ○ not started  – skipped  · not available yet')}`,
     ''
   ].join('\n')
 }
