@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { readdir, readFile, stat } from 'node:fs/promises'
+import { cp, mkdtemp, readdir, readFile, rm, stat } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { test } from 'node:test'
+import { after, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import {
   detectPackageManager,
@@ -18,6 +19,13 @@ const testDirectory = path.dirname(fileURLToPath(import.meta.url))
 const repositoryRoot = path.resolve(testDirectory, '../../..')
 const examplesRoot = path.join(repositoryRoot, 'examples')
 const fixturesRoot = path.join(repositoryRoot, 'fixtures')
+const temporaryDirectories = []
+
+after(async () => {
+  await Promise.all(
+    temporaryDirectories.map(directory => rm(directory, { recursive: true, force: true }))
+  )
+})
 
 async function filesBelow(directory, extension) {
   const entries = await readdir(directory, { withFileTypes: true })
@@ -92,8 +100,12 @@ test('repository fixtures match their declared package-manager and stack outcome
 
   assert.ok(directories.length > 0)
   for (const directory of directories) {
-    const repositoryPath = path.join(fixtureRoot, directory)
-    const expected = await readJson(path.join(repositoryPath, 'expected.json'))
+    const sourcePath = path.join(fixtureRoot, directory)
+    const isolatedRoot = await mkdtemp(path.join(tmpdir(), 'ordo-repository-fixture-'))
+    temporaryDirectories.push(isolatedRoot)
+    const repositoryPath = path.join(isolatedRoot, directory)
+    await cp(sourcePath, repositoryPath, { recursive: true })
+    const expected = await readJson(path.join(sourcePath, 'expected.json'))
     const repository = await inspectRepository(repositoryPath)
     const packageManager = await detectPackageManager(repository)
     const stack = await detectStack(repository)

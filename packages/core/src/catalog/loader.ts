@@ -51,17 +51,31 @@ export function parseMarkdownFrontmatter(content: string): ParsedMarkdown {
   }
 
   const frontmatter: Record<string, FrontmatterValue> = {}
+  // One level of nesting is kept as dotted keys (`metadata:` + `  stack: [x]` becomes
+  // `metadata.stack`), so tool-specific fields can live under `metadata`.
+  let parent: string | undefined
   for (const line of lines.slice(1, end)) {
     if (/^\s/.test(line)) {
+      const nested = line.trim()
+      const nestedSeparator = nested.indexOf(':')
+      if (parent && !nested.startsWith('-') && nestedSeparator > 0) {
+        frontmatter[`${parent}.${nested.slice(0, nestedSeparator).trim()}`] = parseScalar(
+          nested.slice(nestedSeparator + 1)
+        )
+      }
       continue
     }
 
     const separator = line.indexOf(':')
     if (separator < 1) {
+      parent = undefined
       continue
     }
 
-    frontmatter[line.slice(0, separator).trim()] = parseScalar(line.slice(separator + 1))
+    const key = line.slice(0, separator).trim()
+    const rawValue = line.slice(separator + 1)
+    frontmatter[key] = parseScalar(rawValue)
+    parent = rawValue.trim() === '' ? key : undefined
   }
 
   return {

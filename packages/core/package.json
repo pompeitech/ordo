@@ -32,7 +32,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "lint": "biome check src test",
-    "test": "pnpm run build && node --test test/config-catalog.test.mjs test/detection.test.mjs test/doctor.test.mjs test/documentation-fixtures.test.mjs test/installation.test.mjs test/repository-content.test.mjs test/workflows-decisions.test.mjs",
+    "test": "pnpm run build && node --test test/architectures.test.mjs test/changes.test.mjs test/config-catalog.test.mjs test/context.test.mjs test/detection.test.mjs test/doctor.test.mjs test/documentation-fixtures.test.mjs test/explore.test.mjs test/installation.test.mjs test/lifecycle.test.mjs test/profile.test.mjs test/profile-suggestions.test.mjs test/repository-content.test.mjs test/sessions.test.mjs test/specs-plans.test.mjs test/workflows-decisions.test.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }
