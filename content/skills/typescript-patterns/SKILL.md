@@ -2,6 +2,7 @@
 name: typescript-patterns
 description: Apply TypeScript patterns for strict public contracts, runtime validation, exhaustive state modeling, dependency boundaries, and type-safe errors. Use when designing or reviewing TypeScript code.
 metadata:
+  stack: [typescript]
   origin: Ordo
 ---
 

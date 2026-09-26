@@ -2,6 +2,7 @@
 name: javascript-patterns
 description: Apply reliable JavaScript patterns for explicit contracts, asynchronous control flow, validation, module boundaries, and testable side effects. Use in JavaScript projects that intentionally do not rely on TypeScript.
 metadata:
+  stack: [javascript]
   origin: Ordo
 ---
 

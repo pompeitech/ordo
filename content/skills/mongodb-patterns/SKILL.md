@@ -2,6 +2,7 @@
 name: mongodb-patterns
 description: Design and review MongoDB persistence with explicit document invariants, query-driven indexes, bounded access, atomic updates, and safe migrations. Use for MongoDB schemas, repositories, queries, and operational changes.
 metadata:
+  stack: [mongodb]
   origin: Ordo
 ---
 

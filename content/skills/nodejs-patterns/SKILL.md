@@ -2,6 +2,7 @@
 name: nodejs-patterns
 description: Apply the canonical Node.js design patterns — module definition, callbacks and events, asynchronous control flow, streams, creational/structural/behavioral patterns, advanced recipes, scaling and messaging — to design, review, or refactor Node.js code. Use when choosing how to structure a module, compose asynchronous work, wrap or extend an existing component, model varying behavior, or decompose an application; do not use for framework-specific wiring already covered by a dedicated stack skill, or for pure algorithmic work with no design decision.
 metadata:
+  stack: [nodejs]
   origin: Ordo
 ---
 

@@ -2,6 +2,7 @@
 name: fastify-patterns
 description: Build production-ready Fastify applications and APIs with plugins, encapsulation, JSON Schema, TypeScript, authentication, testing, structured logging, graceful shutdown, and measurable performance. Use when the user wants to create, extend, refactor, test, secure, migrate, or deploy a Fastify backend.
 metadata:
+  stack: [fastify]
   origin: Ordo
 ---
 

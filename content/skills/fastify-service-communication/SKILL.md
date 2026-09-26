@@ -2,6 +2,7 @@
 name: fastify-service-communication
 description: Design and implement reliable communication between Fastify services using synchronous HTTP, API gateways, asynchronous events, queues, service authentication, timeouts, safe retries, idempotency, tracing, and graceful resource management. Use when multiple Fastify services must call, proxy, publish to, or consume from one another; do not use for a single-process modular Fastify application with no network or broker boundary.
 metadata:
+  stack: [fastify]
   origin: Ordo
 ---
 
