@@ -21,7 +21,10 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r --if-present lint",
     "ordo": "node packages/cli/dist/bin.js",
+    "ordo:demo": "pnpm -r build && pnpm --filter ordo package && node scripts/demo/demo.mjs",
+    "ordo:demo:clean": "node scripts/demo/clean.mjs",
     "test": "pnpm -r test",
+    "test:demo": "node --test scripts/demo/test/*.test.mjs",
     "typecheck": "pnpm -r typecheck"
   },
   "devDependencies": {
