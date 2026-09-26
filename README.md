@@ -14,9 +14,11 @@
                     ╚═══════════════════╝
 ```
 
-**A deterministic content and workflow harness for AI-assisted software development.**
+**A governed AI engineering workspace, beginning with deterministic content and context control.**
 
 Ordo keeps the reusable engineering layer of an AI coding setup — agents, rules, skills, workflows, installation state, and safety checks — in one versioned catalog. It installs that catalog into the conventions used by Claude Code and Codex without taking ownership of your application code.
+
+Ordo is now evolving toward repository-local project memory, inspectable model context, persistent sessions, provider-neutral execution, structured exploration, staged plans, and team-visible operations. The existing deterministic installer remains the foundation. See the [product vision](docs/product-vision.md).
 
 ## Why Ordo?
 
@@ -67,6 +69,9 @@ ordo install
 | --- | --- |
 | `ordo init` | Create or replace `ordo.config.json` |
 | `ordo install` | Plan and apply catalog files safely |
+| `ordo context` | Govern project memory and preview model context |
+| `ordo session` | Create, inspect, list, and export persistent session records |
+| `ordo agent <claude|codex>` | Execute a ready Ordo plan step through Claude Code or Codex with shared project context |
 | `ordo doctor` | Diagnose repository, configuration, catalog, and targets |
 | `ordo detect` | Inspect repository, package manager, stack, and harness markers |
 | `ordo agents` | List or inspect catalog agents |
@@ -82,6 +87,15 @@ ordo doctor . --json
 ordo agents . --id planner
 ordo skills . --id coding-standards
 ordo install . --dry-run --json
+```
+
+Initialize and inspect repository-local context:
+
+```bash
+ordo context init
+ordo context add docs/domain/business-rules.md
+ordo context preview
+ordo context snapshot
 ```
 
 ## How installation works
@@ -177,6 +191,7 @@ For the repository release path, push an annotated `vX.Y.Z` tag after the releas
 ## Links
 
 - [Documentation](docs/README.md)
+- [Product vision](docs/product-vision.md)
 - [CLI reference](docs/cli-reference.md)
 - [Configuration](docs/configuration.md)
 - [Installation safety](docs/installation-safety.md)

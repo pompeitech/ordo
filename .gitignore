@@ -7,3 +7,6 @@ artifacts/
 !.env.example
 .DS_Store
 *.tsbuildinfo
+
+# Private working specifications for coding agents
+/docs/ordo-requirements.md

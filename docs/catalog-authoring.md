@@ -115,6 +115,20 @@ description: Audit a repository and return prioritized, evidence-backed findings
 
 The body should define identity, trigger conditions, required inputs, procedure, safety boundaries, verification, failure behavior, and an output contract. Avoid vague instructions such as “use best practices” without observable completion criteria.
 
+A skill that only makes sense for certain technologies declares them in `metadata.stack`, using the technology IDs of the stack detector (`fastify`, `express`, `react`, `nextjs`, `mongodb`, `nodejs`, `typescript`, `javascript`, `vitest`, `jest`, `playwright`, `vite`):
+
+```yaml
+---
+name: fastify-patterns
+description: Build production-ready Fastify applications and APIs.
+metadata:
+  origin: Ordo
+  stack: [fastify]
+---
+```
+
+Ordo suggests such a skill for a team profile when the repository uses one of those technologies, and shows the evidence (for example `Fastify (package:fastify)`). General skills without `metadata.stack` are never suggested from detection. Rules need no field: their group directory is the technology. Nothing is added to a profile until someone saves it. Custom keys stay under `metadata`, which harnesses such as Claude Code accept.
+
 ## Workflows
 
 Path:
@@ -166,9 +180,10 @@ The programmatic workflow loader additionally requires a level-one title, non-em
 The current loader intentionally supports a small deterministic subset:
 
 - top-level `key: value` pairs;
+- one level of nested `key: value` pairs under a key with no value, exposed as dotted keys (`metadata:` + `  stack: [fastify]` becomes `metadata.stack`);
 - strings, booleans, numbers, and inline arrays;
-- no nested YAML objects;
-- no indented continuation blocks.
+- no deeper nesting;
+- no indented list items or continuation blocks (they are ignored, so `paths:` lists are not parsed).
 
 Use plain scalar values and keep complex contracts in Markdown sections.
 

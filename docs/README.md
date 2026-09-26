@@ -10,7 +10,7 @@ This directory contains the operational and technical documentation for Ordo. Th
 | [CLI reference](cli-reference.md) | Commands, options, output modes, precedence rules, and exit codes |
 | [Configuration](configuration.md) | Complete `ordo.config.json` schema, defaults, selection rules, and examples |
 | [Catalog authoring](catalog-authoring.md) | Canonical layout and validation requirements for agents, rules, skills, and workflows |
-| [Decision providers](decision-providers.md) | Current JEV status, provider boundaries, and deterministic 1.0 behavior |
+| [Decision support](decision-providers.md) | Deterministic decision contracts and the Claude/Codex boundary for AI-assisted analysis |
 | [Installation safety](installation-safety.md) | Ownership, checksums, conflicts, pruning, atomic writes, and recovery behavior |
 
 ## Maintainer guides
@@ -18,8 +18,12 @@ This directory contains the operational and technical documentation for Ordo. Th
 | Document | Purpose |
 | --- | --- |
 | [Architecture](architecture.md) | Package boundaries, dependency direction, runtime flows, and extension points |
+| [Product vision](product-vision.md) | Target workspace surfaces, repository model, runtime boundaries, and delivery sequence |
+| [Ordo specification and roadmap](ordo-roadmap.md) | Product, workflow, Code OSS desktop, Claude/Codex integrations, security, acceptance criteria, and step-by-step roadmap |
+| [ADR-0001: agent connections and credentials](adr/0001-connessioni-agenti-e-credenziali.md) | How Ordo runs the user's Claude Code/Codex CLIs, sign-in rules, and the limited role of user API keys |
+| [ADR-0002: Ordo as a VS Code extension](adr/0002-ordo-come-estensione-vs-code.md) | Why Ordo ships as the `pompeitech.ordo` extension and the Code OSS desktop spike is frozen |
+| [ADR-0003: designable flows and replay](adr/0003-flussi-disegnabili-e-replay.md) | Team-designed workflows within safety rules, human review during the work, and replay of each decision |
 | [Release process](release-process.md) | Verification, standalone packaging, smoke testing, versioning, and publication boundaries |
-| [Knotic-inspired requirements](knotic-inspired-requirements.md) | Product requirements for shared project memory, versioned artifacts, governed AI workflows, and team context |
 
 The version history is maintained in the repository [changelog](../CHANGELOG.md). Every published version must have a matching annotated Git tag.
 
@@ -45,6 +49,7 @@ Ordo 1.0 provides a deterministic core and CLI for:
 - Claude Code and Codex installation planning and application;
 - ownership-aware updates, conflict handling, pruning, and dry runs;
 - diagnostics and catalog inspection;
+- repository-local project memory, tracked context, visibility controls, and exact payload preview;
 - rule-based decision contracts and a programmatic workflow engine.
 
-The standalone CLI includes its runtime and canonical content catalog. Local/open model runtimes, model downloads, Docker orchestration, JEV integration, decision evaluation commands, and native workflow execution from the CLI remain outside the 1.0 boundary.
+The standalone CLI includes its runtime and canonical content catalog. Separate provider inference, persistent AI sessions, model downloads, Docker orchestration, decision-evaluation commands, and full native workflow execution from the CLI remain outside the current boundary. Planned AI-assisted decision workflows delegate to Claude Code or Codex.
