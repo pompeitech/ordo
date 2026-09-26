@@ -7,7 +7,7 @@
 
 ## Contesto
 
-La roadmap prevedeva Ordo Desktop come distribuzione autonoma di Code OSS con Ordo integrato. Lo spike ([spike-code-oss.md](../spike-code-oss.md)) ha prodotto una `.app` macOS con patch downstream (esclusione di Copilot), l'estensione preinstallata e un tema predefinito.
+La roadmap prevedeva Ordo Desktop come distribuzione autonoma di Code OSS con Ordo integrato. Lo spike, descritto in `spike-code-oss.md` (documento interno, non versionato), ha prodotto una `.app` macOS con patch downstream (esclusione di Copilot), l'estensione preinstallata e un tema predefinito.
 
 Nel frattempo tutte le funzioni Ordo sono state costruite dentro `packages/vscode-ordo`, un'estensione VS Code standard:
 - pagina a tutta larghezza con menu a schede;
@@ -22,8 +22,8 @@ Il mercato conferma entrambe le strade: Kiro (AWS) è un fork di Code OSS, Trayc
 ## Decisione
 
 1. **Ordo si distribuisce come estensione VS Code** con identità `pompeitech.ordo`, su VS Code Marketplace e Open VSX, accanto alla CLI `ordo`. L'estensione impacchettata (`pnpm --filter ordo package` → `ordo.vsix`) contiene il catalogo `content/` di Ordo.
-2. **Lo spike Ordo Desktop (Code OSS) è congelato:** patch, script e documentazione restano nel repository come evidenza, ma non si investe in packaging, firma, updater o pipeline multi-OS.
-3. **Il tema non fa parte di Ordo:** il tema Lava sarà un'estensione separata Pompei Tech. La palette resta in [theme.md](../theme.md).
+2. **Lo spike Ordo Desktop (Code OSS) è congelato:** patch, script e documentazione dello spike restano come documenti interni fuori dal repository, ma non si investe in packaging, firma, updater o pipeline multi-OS.
+3. **Il tema non fa parte di Ordo:** il tema Lava sarà un'estensione separata Pompei Tech. La palette resta in `theme.md` (documento interno, non versionato).
 4. L'estensione usa solo API stabili di VS Code, così funziona anche negli editor basati su VS Code che installano da Open VSX. La compatibilità con ciascun editor va verificata prima di dichiararla.
 
 ## Alternative considerate

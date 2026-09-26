@@ -76,7 +76,7 @@ shared .ordo artifacts in the project repository
   -> project workspace view and source navigation
 ```
 
-The extension is an adapter and presentation-layer prototype, not the final product. Ordo Desktop must be an autonomous Code OSS/Electron-based distribution. Team decisions remain in versioned files, Claude Code/Codex credentials remain in their secure local configurations, and the same artifacts are available through CLI automation. The distribution must not depend on Microsoft's Visual Studio Marketplace; Code OSS build/distribution and gallery constraints are tracked in [the Code OSS spike](spike-code-oss.md).
+Ordo ships as this VS Code extension (`pompeitech.ordo`) together with the CLI; the Code OSS desktop distribution is frozen (ADR-0002). Team decisions remain in versioned files, Claude Code/Codex credentials remain in their secure local configurations, and the same artifacts are available through CLI automation. Ordo must not depend on Microsoft services beyond the marketplaces it is published to; the frozen Code OSS spike is an internal document, not versioned.
 
 ## Detection flow
 
