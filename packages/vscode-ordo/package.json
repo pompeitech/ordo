@@ -1,0 +1,210 @@
+{
+  "name": "ordo",
+  "displayName": "Ordo",
+  "description": "Shared business requirements, implementation plans and a team profile of agents, skills and rules, run through Claude Code or Codex.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "pompeitech",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pompeitech/ordo.git",
+    "directory": "packages/vscode-ordo"
+  },
+  "homepage": "https://github.com/pompeitech/ordo#readme",
+  "bugs": {
+    "url": "https://github.com/pompeitech/ordo/issues"
+  },
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ordo",
+          "title": "Ordo",
+          "icon": "media/ordo.svg"
+        }
+      ]
+    },
+    "views": {
+      "ordo": [
+        {
+          "id": "ordo.workspace",
+          "type": "webview",
+          "name": "Ordo",
+          "contextualTitle": "Ordo"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "ordo.openWorkspace",
+        "title": "Open Ordo",
+        "category": "Ordo"
+      },
+      {
+        "command": "ordo.openWorkflow",
+        "title": "Open Workflow and Replay",
+        "category": "Ordo"
+      },
+      {
+        "command": "ordo.refresh",
+        "title": "Refresh Shared Project Data",
+        "category": "Ordo",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "ordo.createRequirement",
+        "title": "Create Business Requirement",
+        "category": "Ordo"
+      },
+      {
+        "command": "ordo.createPlan",
+        "title": "Create Implementation Plan",
+        "category": "Ordo"
+      },
+      {
+        "command": "ordo.openTeamProfile",
+        "title": "Open Team Profile",
+        "category": "Ordo"
+      },
+      {
+        "command": "ordo.openConnections",
+        "title": "Open AI Connections",
+        "category": "Ordo"
+      },
+      {
+        "command": "ordo.initializeContext",
+        "title": "Initialize Shared Project Context",
+        "category": "Ordo"
+      },
+      {
+        "command": "ordo.setExecutablePath",
+        "title": "Set Agent Executable Path",
+        "category": "Ordo"
+      },
+      {
+        "command": "ordo.checkConnections",
+        "title": "Recheck AI Connections",
+        "category": "Ordo"
+      },
+      {
+        "command": "ordo.setApiKey",
+        "title": "Use an API Key for an Agent",
+        "category": "Ordo"
+      },
+      {
+        "command": "ordo.clearApiKey",
+        "title": "Remove Claude Code API Key",
+        "category": "Ordo"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "ordo.refresh",
+          "when": "view == ordo.workspace",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ordo.createRequirement"
+        },
+        {
+          "command": "ordo.createPlan"
+        },
+        {
+          "command": "ordo.initializeContext"
+        },
+        {
+          "command": "ordo.checkConnections"
+        },
+        {
+          "command": "ordo.setApiKey"
+        },
+        {
+          "command": "ordo.clearApiKey"
+        },
+        {
+          "command": "ordo.setExecutablePath"
+        },
+        {
+          "command": "ordo.openTeamProfile"
+        },
+        {
+          "command": "ordo.openConnections"
+        },
+        {
+          "command": "ordo.openWorkflow"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Ordo",
+      "properties": {
+        "ordo.claudeCode.path": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "markdownDescription": "Optional absolute path to the Claude Code executable. Leave empty to detect the installed CLI from PATH. Ordo uses the account already authenticated by the CLI and never copies its credentials."
+        },
+        "ordo.codex.path": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "markdownDescription": "Optional absolute path to the Codex executable. Leave empty to detect the installed CLI from PATH. Ordo uses the account already authenticated by the CLI and never copies its credentials."
+        },
+        "ordo.closeSidebarOnOpen": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Close the sidebar when Ordo opens from the Activity Bar, so the Ordo page uses the full editor width. Turn it off to keep your sidebar open."
+        }
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "content",
+    "media",
+    "LICENSE",
+    "README.md",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "lint": "biome check src scripts test",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "pnpm --filter @pompeitech/ordo-core --filter @pompeitech/ordo-runtime build && pnpm run build && node --test test/*.test.mjs",
+    "package": "pnpm run build && vsce package --no-dependencies --out ordo.vsix"
+  },
+  "dependencies": {
+    "@pompeitech/ordo-core": "workspace:*",
+    "@pompeitech/ordo-runtime": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.104.0",
+    "@vscode/vsce": "^3.9.2",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.9.0"
+  }
+}
