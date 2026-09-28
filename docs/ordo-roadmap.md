@@ -460,7 +460,35 @@ Le fasi sono ordinate per dipendenza. Le attività sono completate solo quando e
 - [x] Pagina Ordo a tutta larghezza nell'editor, con menu laterale a schede: Overview, Requirements, Plans, Decisions, Sessions, Team profile, AI connections. L'icona nella barra delle attività apre la pagina e chiude la sidebar; la scheda aperta viene ricordata.
 - [x] Profilo di team nell'editor: agenti, skill, regole e workflow di `content/` con modalità required/default/recommended/enabled/disabled. Le modifiche restano in sospeso, con elenco "da → a", fino al salvataggio in `.ordo/profile.json`; le voci cambiate nel catalogo vanno accettate. Anteprima di ciò che riceve ogni sessione. Catalogo del repository o, in mancanza, quello incluso in Ordo. Test in `packages/vscode-ordo/test/profile.test.mjs`.
 - [x] Proposte di skill e regole in base allo stack rilevato (`metadata.stack` nelle skill, cartella per le regole), sempre con la loro evidenza (es. `Fastify (package:fastify)`). Non ripropone voci già decise dal team e non si applicano senza salvataggio ([catalog-authoring](catalog-authoring.md); test in `packages/core/test/profile-suggestions.test.mjs`).
-- [ ] Aggiungere selettore agente/skill per sessione con indicazione chiara di default, raccomandato, obbligatorio e disabilitato dal profilo team (il profilo di team esiste; manca la scelta per singola sessione nel Run Workspace).
+- [x] **Run Workspace, passo A.** "Run" sugli step pronti della scheda Workflow:
+  - pannello dentro la pagina, senza finestre modali;
+  - agenti come pulsanti, e quelli non connessi sono disattivati con il motivo;
+  - barra con la stima dei token che Ordo invia, per parte, più agente, skill e regole della sessione;
+  - output in streaming con Stop, e richieste di permesso di Codex nel pannello;
+  - code review nello stesso pannello a fine esecuzione.
+
+  Anche la code review è un pannello della pagina: file con spunta e pulsante Diff, decisione e nota in linea, pulsante esplicito "Undo N files and submit review".
+
+  CLI ed estensione usano lo stesso runtime (`preparePlanStepRun` / `executePlanStepRun` in `packages/runtime/src/step-run.ts`); la stima è registrata nel manifest (`promptEstimatedTokens`). Esempio nel [README dell'estensione](../packages/vscode-ordo/README.md). Primo dato misurato sulla demo: le istruzioni del profilo sono ~94% della richiesta.
+- [ ] **Chat interna** (priorità prima del passo B). Una scheda Chat nella pagina Ordo con Claude Code e Codex, e un selettore per passare dall'uno all'altro tra un messaggio e l'altro. Scelte già fatte:
+  - le chat sono **personali** (stato locale della macchina, mai in `.ordo/`), con un pulsante esplicito per collegarne una a un requisito;
+  - la conversazione la conserva Ordo; ogni agente riprende la propria con i suoi meccanismi nativi, e al cambio di agente Ordo passa la trascrizione mostrando prima la stima dei token;
+  - due modalità: "Chiedi", in sola lettura, e "Modifica", con foto dei file e la stessa code review del Run.
+
+  Passi, ognuno con demo:
+  1. [x] verifica tecnica (fatta il 27/09, vedi sotto);
+  2. [x] scheda Chat in modalità "Chiedi" (27/09);
+  3. [x] selettore e passaggio tra agenti (27/09, insieme al passo 2);
+  4. [ ] modalità "Modifica" con review.
+
+  Impaginazione rifatta il 27/09 dopo la segnalazione "non è responsive". La chat occupa l'altezza della finestra; l'elenco diventa un menu nelle finestre strette. Il menu laterale si stringe sotto i 1000 px e diventa una barra scorrevole sotto i 720 px. La griglia non può più sbordare, e il Markdown delle risposte viene mostrato. Nuovo `pnpm --filter ordo preview`: foto della pagina a 1440/1024/760/500 px con i dati della demo e avviso se una pagina sborda. Corrette quattro collisioni di nomi CSS (`fill`, `agent`, `small`, `detail`).
+
+  Fatto: `sendChatMessage`, `listChats`, `readChat`, `deleteChat`, `chatHandoff` in `packages/runtime/src/chat.ts`. Le chat sono in `$XDG_STATE_HOME/ordo/chats/<hash del progetto>/<id>.json` con permessi 0600. Negli adapter: `resume` e `access: 'read-only'`; Claude Code riceve anche `--include-partial-messages`, che corregge lo streaming del testo nel Run. Test in `packages/runtime/test/chat.test.mjs`; esempio nel [README dell'estensione](../packages/vscode-ordo/README.md). Prova reale del 27/09: una domanda a Claude, poi il passaggio a Codex nella stessa chat; Codex conosceva il contesto e il progetto è rimasto intatto.
+
+  Verifica del 27/09:
+  - Claude Code 2.1.283: `claude -p --resume <session_id>` riprende la conversazione mantenendo lo stesso ID. `--permission-mode plan` blocca le scritture, ma fa rispondere l'agente "in modalità piano"; per "Chiedi" si usa `--permission-mode dontAsk --allowedTools=Read,Grep,Glob`, che risponde normalmente e nega scritture e comandi.
+  - Codex 0.157: `thread/resume` riprende il thread anche in un nuovo processo `app-server`. `sandbox: "read-only"` blocca le scritture (con `item/fileChange/requestApproval` rifiutata).
+- [ ] Aggiungere selettore agente/skill per sessione con indicazione chiara di default, raccomandato, obbligatorio e disabilitato dal profilo team (Run Workspace, passo B).
 - [x] Aggiungere AI Connections: rilevamento, versione e stato di autenticazione di Claude Code e Codex; path dell'eseguibile opzionale (assoluto, scope `machine`) e Recheck. Le credenziali restano ai rispettivi harness; l'API key opzionale dell'utente segue [ADR-0001](adr/0001-connessioni-agenti-e-credenziali.md). Oggi è una sezione del pannello Ordo, non ancora una pagina Settings dedicata; la webview non ha test automatici.
 - [x] Estensione pubblicabile `pompeitech.ordo`: `pnpm --filter ordo package` produce `ordo.vsix` con `@vscode/vsce`, catalogo incluso e nessun avviso. Installata e verificata in VS Code 1.138 con profilo isolato ([ADR-0002](adr/0002-ordo-come-estensione-vs-code.md)).
 - [ ] Pubblicare su VS Code Marketplace e Open VSX: publisher `pompeitech`, icona PNG, verifica negli editor derivati da VS Code prima di dichiararne la compatibilità.
@@ -488,6 +516,12 @@ Le fasi sono ordinate per dipendenza. Le attività sono completate solo quando e
   - *demo con un caso reale da annullare.*
 
   *Esempio d'uso nel [README dell'estensione](../packages/vscode-ordo/README.md) e nel [riferimento CLI](cli-reference.md). Test in `packages/core/test/changes.test.mjs`, `packages/cli/test/agent.test.mjs`, `packages/vscode-ordo/test/code-review.test.mjs` e `scripts/demo/test/scenario.test.mjs`.* Prima e dopo ogni task Ordo fotografa lo stato dei file con un tree Git temporaneo: niente commit, niente modifiche all'area di lavoro, file non tracciati inclusi. Il diff fra le due fotografie mostra solo le modifiche dell'agente, anche su un'area di lavoro già modificata. La review elenca i file cambiati con il diff editor di VS Code: accetta o rifiuta per file (il rifiuto ripristina la versione pre-task), più accetta/rifiuta tutto. Se l'utente ha modificato a mano un file nel frattempo, Ordo avvisa e non sovrascrive. L'esito diventa la decisione di review di [ADR-0003](adr/0003-flussi-disegnabili-e-replay.md) (approvato, modifiche richieste, bloccato; nota; file accettati e rifiutati) e compare nel replay come decisione umana. Stesso meccanismo per ogni harness supportato; parità CLI per la decisione. Assorbe "catturare diff pre/post" (Fase 3) e "approvazioni/diff UI" per la parte agenti.
+- [ ] **Efficienza dei token.** Ordo non consuma token (ADR-0001); rende misurabile e riduce quanto spendono Claude Code e Codex. Si parte dalla misura: dimensione stimata di ciò che Ordo manda all'agente (spec, contesto, istruzioni di profilo), accanto ai token reali di ogni esecuzione. Leve da confrontare sui numeri:
+  - step piccoli e ben delimitati;
+  - meno rilavorazioni, grazie a spec chiare e alla review a ogni step;
+  - contesto e skill limitati a ciò che serve allo step, con un budget;
+  - modello adeguato allo step;
+  - navigazione semantica del codice (per esempio Serena MCP o i language server), opzionale, per singola esecuzione, con consenso e senza toccare la configurazione globale dell'utente.
 - [ ] **Designer dei flussi**: canvas a nodi e frecce che parte da modelli (Standard, Fix veloce, Regolamentato); validazione R1–R6 nel core; salvataggio versionato in `.ordo/flows/<id>.json`; scelta del flusso predefinito nel profilo e del flusso per requisito alla creazione; `ordo flow validate|show`.
 - [ ] **Esecuzione guidata dal flusso**: motore a grafo nel core; ogni requisito vincolato alla versione del flusso con cui è partito; azione umana "aggiorna al nuovo flusso", con recupero dei nodi obbligatori nuovi e registrazione nell'audit; `workflowStatus` e il replay leggono la versione vincolata.
 - [ ] Aggiungere controlli run governati: turn/tool iteration cap, auto-continue e massimo passaggi, concurrency separata per pianificazione Architect/step DAG/background agent e timeout di startup, primo evento e run totale.
