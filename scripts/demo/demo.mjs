@@ -80,10 +80,17 @@ What to show:
   1. Ordo icon in the Activity Bar → Overview: requirements, team profile, AI connections and plan usage.
   2. Workflow: each requirement across brainstorm → … → record, what blocks it and the next step.
   3. Click "Safe checkout" → Replay: press ▶, filter "Human decisions", spot the run with the most tokens.
-  4. "Review step" on "errors": the files the agent changed open in the diff editor. Uncheck
-     README.md (the agent rewrote it for no reason), approve, and the README goes back to
-     its original text; the replay shows what was kept and what was undone.
-  5. Team profile → "Create with suggestions": skills proposed for Fastify, MongoDB and TypeScript.
+  4. "Review step" on "errors": a Code review panel opens in the page. "Diff" shows each file
+     beside it. Uncheck README.md (the agent rewrote it for no reason), keep "Approve" and press
+     "Undo 1 file and submit review"; the replay shows what was kept and what was undone.
+  5. After approving "errors", press "Run \"logging\"": a Run panel opens. Pick the agent, read the
+     token estimate bar, press Start and follow the output; the code review follows in the same
+     panel. This starts a real agent on your own Claude Code or Codex plan.
+  6. Team profile: the shared agents, skills and rules, with suggestions for Fastify, MongoDB
+     and TypeScript.
+  7. Chat: choose Claude Code and ask "What is Safe checkout about?", then switch to Codex and ask
+     "What is still missing?". Codex gets the earlier messages; nothing in the project changes.
+     This uses your own plan, like a run.
 
 Same data from the terminal:
   cd ${projectDirectory}

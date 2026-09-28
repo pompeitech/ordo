@@ -65,6 +65,15 @@ export async function createDemoScenario(projectDirectory) {
   }
 
   await core.initializeProjectContext(root)
+  // Business context the agents receive, and the team profile they run with.
+  await write(
+    'docs/business.md',
+    '# Checkout service\n\nOnline shop checkout. Rejected payments must never create an order; customers must see why a payment failed.\n'
+  )
+  await core.addContextEntry(root, 'docs/business.md')
+  await core.initializeProjectProfile(root, path.join(repositoryRoot, 'content'), {
+    defaultAgentId: 'tdd-guide'
+  })
 
   // A requirement that went through most of the workflow.
   const exploration = await core.createExplore(root, {
@@ -131,6 +140,13 @@ export async function createDemoScenario(projectDirectory) {
         description: 'Clear error messages',
         expectedOutput: '422 with a reason',
         dependsOn: ['persist'],
+        verification: ['pnpm test']
+      },
+      {
+        id: 'logging',
+        description: 'Log every rejected payment with its reason, without card data',
+        expectedOutput: 'One log line per rejected payment',
+        dependsOn: ['errors'],
         verification: ['pnpm test']
       }
     ]
