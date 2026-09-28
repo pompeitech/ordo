@@ -13,6 +13,7 @@ import {
   readSession,
   updateSpecStatus
 } from '@pompeitech/ordo-core'
+import { preparePlanStepRun } from '@pompeitech/ordo-runtime'
 import { runCli } from '../dist/program.js'
 
 const temporaryDirectories = []
@@ -656,4 +657,29 @@ process.stdout.write(JSON.stringify({type:'result',session_id:'native-diff',resu
     await readFile(path.join(repo, 'src', 'validator.js'), 'utf8'),
     'module.exports = () => true\n'
   )
+})
+
+test('preparing a run estimates what Ordo will send and starts nothing', async () => {
+  const fixture = await createFixture()
+
+  const prepared = await preparePlanStepRun({
+    harness: 'claude-code',
+    directory: fixture.repository,
+    specId: fixture.spec.id,
+    planId: fixture.plan.id,
+    stepId: 'audit-record',
+    contentRoot: fixture.contentRoot,
+    command: fixture.command
+  })
+
+  assert.equal(prepared.step.id, 'audit-record')
+  assert.deepEqual(
+    prepared.estimate.parts.map(part => part.name),
+    ['Specification and plan step', 'Project context', 'Profile instructions']
+  )
+  assert.equal(prepared.estimate.estimatedTokens, Math.ceil(prepared.estimate.characters / 4))
+  assert.ok(prepared.buildPrompt('session-1').includes('Ordo session: session-1'))
+  assert.deepEqual(await listSessions(fixture.repository), [])
+  const plan = await readPlan(fixture.repository, fixture.plan.id)
+  assert.equal(plan.steps.find(step => step.id === 'audit-record').status, 'pending')
 })
