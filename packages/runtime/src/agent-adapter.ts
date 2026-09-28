@@ -8,6 +8,8 @@ export type AgentCapability =
   | 'resume'
   | 'approval-requests'
 
+export type AgentAccess = 'read-only' | 'workspace'
+
 export type AgentCapabilities = Readonly<Record<AgentCapability, boolean>>
 
 export interface AgentApprovalRequest {
@@ -64,6 +66,13 @@ export interface AgentRunOptions {
    */
   readonly apiKey?: string
   readonly prompt: string
+  /** Continues an earlier conversation of this harness: Claude session ID or Codex thread ID. */
+  readonly resume?: string
+  /**
+   * `read-only` lets the agent read the project but never write files or run commands:
+   * Claude Code gets only its read tools, Codex runs in its read-only sandbox.
+   */
+  readonly access?: AgentAccess
   readonly signal?: AbortSignal
   readonly onEvent?: (event: AgentEvent) => void | Promise<void>
   readonly onApprovalRequest?: (

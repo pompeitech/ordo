@@ -1,6 +1,7 @@
 import { type ChildProcess, spawn } from 'node:child_process'
 import { createInterface } from 'node:readline'
 import type {
+  AgentAccess,
   AgentAdapter,
   AgentCapabilities,
   AgentEvent,
@@ -19,7 +20,7 @@ export const claudeCodeCapabilities: AgentCapabilities = Object.freeze({
   streaming: true,
   usage: true,
   cancellation: true,
-  resume: false,
+  resume: true,
   'approval-requests': false
 })
 
@@ -29,8 +30,32 @@ export interface ClaudeCodeRunOptions {
   /** The user's Anthropic API key; pass it only when Claude Code is not logged in. */
   readonly apiKey?: string
   readonly prompt: string
+  /** Claude Code session ID to continue. */
+  readonly resume?: string
+  readonly access?: AgentAccess
   readonly signal?: AbortSignal
   readonly onEvent?: (event: ClaudeCodeEvent) => void | Promise<void>
+}
+
+/** Tools a read-only session may use; everything else is denied without asking. */
+export const CLAUDE_READ_ONLY_TOOLS = ['Read', 'Grep', 'Glob'] as const
+
+export function claudeCodeArguments(
+  options: Pick<ClaudeCodeRunOptions, 'prompt' | 'resume' | 'access'>
+): string[] {
+  return [
+    '-p',
+    '--output-format',
+    'stream-json',
+    '--verbose',
+    '--include-partial-messages',
+    ...(options.resume ? ['--resume', options.resume] : []),
+    ...(options.access === 'read-only'
+      ? ['--permission-mode', 'dontAsk', `--allowedTools=${CLAUDE_READ_ONLY_TOOLS.join(',')}`]
+      : []),
+    '--',
+    options.prompt
+  ]
 }
 
 export interface ClaudeCodeRunResult {
@@ -114,16 +139,12 @@ export async function runClaudeCode(options: ClaudeCodeRunOptions): Promise<Clau
   }
 
   const command = options.command ?? 'claude'
-  const child = spawn(
-    command,
-    ['-p', '--output-format', 'stream-json', '--verbose', options.prompt],
-    {
-      cwd: options.cwd,
-      env: claudeCodeEnvironment(options.apiKey),
-      shell: false,
-      stdio: ['ignore', 'pipe', 'pipe']
-    }
-  )
+  const child = spawn(command, claudeCodeArguments(options), {
+    cwd: options.cwd,
+    env: claudeCodeEnvironment(options.apiKey),
+    shell: false,
+    stdio: ['ignore', 'pipe', 'pipe']
+  })
   const closed = new Promise<number>((resolve, reject) => {
     child.once('error', reject)
     child.once('close', code => resolve(code ?? 1))

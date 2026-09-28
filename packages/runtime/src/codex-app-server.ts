@@ -19,7 +19,7 @@ export const codexCapabilities: AgentCapabilities = Object.freeze({
   streaming: true,
   usage: false,
   cancellation: true,
-  resume: false,
+  resume: true,
   'approval-requests': true
 })
 
@@ -260,7 +260,15 @@ export async function runCodex(options: AgentRunOptions): Promise<{
   try {
     await request('initialize', { clientInfo: { name: 'ordo', title: 'Ordo', version: '1.0.1' } })
     send({ jsonrpc: '2.0', method: 'initialized', params: {} })
-    const started = record(await request('thread/start', { cwd: options.cwd }))
+    const threadOptions = {
+      cwd: options.cwd,
+      ...(options.access === 'read-only' ? { sandbox: 'read-only', approvalPolicy: 'never' } : {})
+    }
+    const started = record(
+      options.resume
+        ? await request('thread/resume', { threadId: options.resume, ...threadOptions })
+        : await request('thread/start', threadOptions)
+    )
     const thread = record(started?.thread)
     threadId = typeof thread?.id === 'string' ? thread.id : undefined
     if (!threadId) {

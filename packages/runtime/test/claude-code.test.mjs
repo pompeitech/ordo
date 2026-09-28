@@ -84,7 +84,7 @@ event({type:'result',session_id:'native-123',result:'Hello',usage:{input_tokens:
     streaming: true,
     usage: true,
     cancellation: true,
-    resume: false,
+    resume: true,
     'approval-requests': false
   })
   assert.deepEqual(result, { text: 'Hello', nativeSessionId: 'native-123', exitCode: 0 })

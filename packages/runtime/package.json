@@ -19,7 +19,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "lint": "biome check src test",
-    "test": "pnpm --filter @pompeitech/ordo-core build && pnpm run build && node --test test/runtime.test.mjs test/claude-code.test.mjs test/codex-app-server.test.mjs test/connection.test.mjs test/usage.test.mjs",
+    "test": "pnpm --filter @pompeitech/ordo-core build && pnpm run build && node --test test/runtime.test.mjs test/claude-code.test.mjs test/codex-app-server.test.mjs test/connection.test.mjs test/usage.test.mjs test/chat.test.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

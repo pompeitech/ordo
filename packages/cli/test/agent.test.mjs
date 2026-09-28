@@ -231,7 +231,7 @@ test('agent claude runs a ready Ordo plan step with snapshotted context and prof
     streaming: true,
     usage: true,
     cancellation: true,
-    resume: false,
+    resume: true,
     'approval-requests': false
   })
   assert.equal(report.contextSnapshotId, session.session.contextSnapshotId)
@@ -375,7 +375,7 @@ test('agent codex runs the same Ordo plan through app-server and records its nat
     streaming: true,
     usage: false,
     cancellation: true,
-    resume: false,
+    resume: true,
     'approval-requests': true
   })
   assert.ok(

@@ -1,4 +1,5 @@
 export * from './agent-adapter.js'
+export * from './chat.js'
 export * from './claude-code.js'
 export * from './codex-app-server.js'
 export * from './connection.js'
