@@ -89,6 +89,7 @@ The demo project is always the same: a requirement that went through most of the
 ```sh
 pnpm --filter ordo build   # bundle into dist/
 pnpm --filter ordo test    # builds core/runtime, then unit and plan-flow tests
+pnpm --filter ordo preview # screenshots of the page at 1440, 1024, 760 and 500 px
 ```
 
-The tests cover the plan input mapping, plan creation against a real `.ordo/` fixture, and the AI connection helpers. The webview UI and the interactive plan flow are not covered by automated tests yet.
+The tests cover the plan input mapping, plan creation against a real `.ordo/` fixture, and the AI connection helpers. The webview UI has no automated tests; `preview` renders it outside VS Code with the demo data and a dark theme, writes an HTML file and four screenshots per tab to `$TMPDIR/ordo-preview` (or `ORDO_PREVIEW_DIR`), and warns when a page is wider than the window. It needs Google Chrome, or `ORDO_PREVIEW_CHROME`. Example: `ORDO_PREVIEW_TABS=chat,workflow pnpm --filter ordo preview`.
