@@ -11,9 +11,11 @@ Ordo ships as a VS Code extension (`pompeitech.ordo`) that also runs in editors 
 Ordo opens as a full page in the editor (Activity Bar → Ordo, or **Ordo: Open Ordo**), with a side menu:
 
 - **Overview**: counts, quick actions, project memory, team profile summary, AI connections and plan usage.
+- **Chat**: ask Claude Code or Codex about the project, and switch agent at any message. Read-only, and personal: chats stay on this machine.
 - **Requirements**, **Plans**, **Decisions**, **Sessions**: the shared artifacts under `.ordo/`, opened beside the page. New requirements and implementation plans are created from here, and an existing plan is never overwritten.
 - **Team profile**: which agents, skills, rules, and workflows the team uses (required, default, recommended, available, or disabled), saved to `.ordo/profile.json` only after reviewing the pending changes. Skills and rules that fit the detected stack are suggested with their evidence. The catalog is the repository's own `content/` or, failing that, the one shipped with Ordo.
-- **Code review**: after each agent run, the changed files open in the diff editor; keep or undo each file, then approve, request changes, or block.
+- **Run a step**: in a panel of the Workflow page, pick Claude Code or Codex, see how many tokens Ordo will send, and follow the agent's output.
+- **Code review**: in a panel of the Workflow page, keep or undo each file the agent changed (with VS Code's diff editor one click away), then approve, request changes, or block.
 - **AI connections**: whether the Claude Code and Codex CLIs are installed and signed in, and how much of the plan's 5-hour and weekly windows is used. Codex is read live; Claude Code shows the last value reported during a run. An agent that is not signed in cannot run.
 
 Plan usage is personal: it stays in `$XDG_STATE_HOME/ordo/usage.json` (default `~/.local/state/ordo/usage.json`) on this machine and is never written to `.ordo/`.
@@ -22,19 +24,46 @@ Plan usage is personal: it stays in `$XDG_STATE_HOME/ordo/usage.json` (default `
 
 - `ordo.closeSidebarOnOpen` (default `true`): close the sidebar when Ordo opens from the Activity Bar, so the page uses the full width.
 
+## Chat with Claude Code or Codex
+
+**Ordo → Chat** (or **Ordo: Open Chat**) is a conversation with the agents you already have. It is read-only: the agent can read and search the project but cannot change files or run commands. Claude Code gets only its `Read`, `Grep` and `Glob` tools; Codex runs in its read-only sandbox. To change code, use a plan step and its code review.
+
+**Example**, in any project:
+
+1. Open **Chat**, choose **Claude Code** at the top and ask `Where are card numbers validated?`. Press Enter (Shift+Enter adds a line). The answer streams in, and **Stop** interrupts it.
+2. Ask a follow-up, `Does it accept 15 digits?`. Claude continues its own conversation: Ordo sends only the new message.
+3. Switch to **Codex** and ask `Would a Luhn check fit there?`. Before you send, the chat says what Codex has not seen, for example "Codex has not seen 4 earlier messages: Ordo hands them over with your next message (~180 tokens)". Codex receives that transcript once, then continues its own thread.
+4. Chats are listed on the left, with **New chat** and **Delete**. In a narrow window the list becomes a drop-down above the conversation. The chat always fills the window: messages scroll, the message box stays at the bottom and grows as you type. Answers show Markdown: code blocks, inline code, bold and lists.
+
+Chats are personal: they are stored in `$XDG_STATE_HOME/ordo/chats/` (default `~/.local/state/ordo/chats/`, or `$ORDO_STATE_DIR/chats/`), readable only by you, never in `.ordo/` or Git. Each message uses your own Claude Code or Codex plan, like a run. The agent keeps its conversation in its own CLI (a Claude Code session, a Codex thread); if it has forgotten one, Ordo starts a new one with the full transcript.
+
+## Run a step with an agent
+
+A plan step that is ready shows **Run** in **Ordo → Workflow**. Everything happens in a panel at the top of that page, without dialogs. Ordo uses the same runtime as `ordo agent`, so the same gates apply: the specification must be `ready`, the team profile valid, shared context present, and the agent installed and signed in.
+
+**Example**, with the demo (`pnpm ordo:demo`), after approving the step `errors`:
+
+1. The row "Safe checkout" shows **Run "logging"**. Click it: the **Run step** panel opens.
+2. Pick the agent with its button, **Claude Code** or **Codex**. An agent that is not connected is greyed out and says why.
+3. The panel shows what Ordo will send before the agent reads any code, as a bar with a legend, for example `~6,000 tokens`: specification and step ~200, project context ~120, profile instructions ~5,650. It also shows the session's agent, skills and rules. Optionally add an instruction, then press **Start**.
+4. The agent's text streams into the panel, and **Stop** interrupts it. If Codex asks to run a command, the request appears in the panel with **Allow once** and **Decline**.
+5. When the agent finishes, the panel turns into the code review of what it changed.
+
+The run uses your own Claude Code or Codex plan (or API key). Ordo records the estimate in the session manifest (`promptEstimatedTokens`) next to the tokens the agent reports.
+
 ## Code review of agent work
 
-Every agent run started with `ordo agent` is photographed before and after, so a person reviews exactly what the agent changed before the step can go on.
+Every agent run started from Ordo is photographed before and after, so a person reviews exactly what the agent changed before the step can go on.
 
 **Example**, with the demo (`pnpm ordo:demo`):
 
-1. Open **Ordo → Workflow**. The row "Safe checkout" shows **Review step** for the step `errors`.
-2. Click it. The list of files the agent changed appears (`README.md`, `src/checkout.ts`, `src/errors.ts`), each checked, and the first diff opens beside it: before the run on the left, the file now on the right. The diff button on each row opens that file's diff.
-3. Uncheck `README.md`, which the agent rewrote for no reason, and press Enter.
-4. Choose **Approve** (or request changes / block with a note) and confirm **Undo and record the review**.
-5. `README.md` is back to its text from before the run; the other two files stay. In the replay, the review shows "kept 2 file(s) · undone: README.md".
+1. Open **Ordo → Workflow**. The row "Safe checkout" shows **Review step** for the step `errors`. Click it: the **Code review** panel opens at the top of the page.
+2. Every file the agent changed is listed with a check box, its kind (A added, M modified, D deleted) and its line counts: `README.md`, `src/checkout.ts`, `src/errors.ts`. **Diff** opens that file in VS Code's diff editor beside the page (before the run on the left, the file now on the right); the panel stays where it is.
+3. Uncheck `README.md`, which the agent rewrote for no reason.
+4. Choose **Approve**, **Request changes** or **Block**. The last two need a note, which the panel asks for inline.
+5. Press **Undo 1 file and submit review**. `README.md` goes back to its text from before the run; the other two files stay. In the replay, the review shows "kept 2 file(s) · undone: README.md".
 
-If you edited a file by hand after the agent finished, Ordo refuses to undo it and names the file. Nothing is undone and nothing is recorded, so your work is never overwritten. Outside a Git repository the review still works, without a diff. From the terminal: `ordo plan changes <plan> --step-id <step> --diff` and `ordo plan review … --reject <file>` (see the CLI reference).
+If you edited a file by hand after the agent finished, Ordo refuses to undo it and the panel names the file. Nothing is undone and nothing is recorded, so your work is never overwritten. Outside a Git repository the review still works, without a diff. From the terminal: `ordo plan changes <plan> --step-id <step> --diff` and `ordo plan review … --reject <file>` (see the CLI reference).
 
 ## Agent credentials
 

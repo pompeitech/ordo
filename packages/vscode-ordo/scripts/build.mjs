@@ -8,7 +8,8 @@ await build({
     'src/plan-input.ts',
     'src/connections.ts',
     'src/profile-model.ts',
-    'src/code-review-model.ts'
+    'src/code-review-model.ts',
+    'src/run-model.ts'
   ],
   outdir: 'dist',
   entryNames: '[name]',

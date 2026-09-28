@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import os from 'node:os'
 import path from 'node:path'
 import {
@@ -15,6 +16,7 @@ import {
   listSessions,
   listSpecs,
   loadCatalog,
+  type ProfileSessionSelection,
   type ProfileSuggestion,
   type ProjectProfile,
   readPlan,
@@ -31,14 +33,25 @@ import {
 } from '@pompeitech/ordo-core'
 import {
   type AgentAdapterId,
+  type AgentApprovalDecision,
+  type AgentApprovalRequest,
   type AgentUsage,
+  type ChatThread,
+  chatHandoff,
   checkAgentConnection,
+  deleteChat,
+  executePlanStepRun,
+  listChats,
   loginCodexWithApiKey,
+  type PlanStepRunOptions,
+  preparePlanStepRun,
+  readChat,
   readCodexUsage,
-  readRecordedUsage
+  readRecordedUsage,
+  sendChatMessage
 } from '@pompeitech/ordo-runtime'
 import * as vscode from 'vscode'
-import { chooseFilesToKeep } from './code-review.js'
+import { openAgentDiff } from './code-review.js'
 import {
   CLAUDE_API_KEY_SECRET,
   type ConnectionView,
@@ -58,7 +71,15 @@ import {
   resolveProfileContentRoot,
   summarizeProfile
 } from './profile-model.js'
-import type { HostMessage, TeamProfileState, WebviewMessage, WorkspaceSnapshot } from './types.js'
+import { describeEstimate, runHarnesses } from './run-model.js'
+import type {
+  ChatView,
+  HostMessage,
+  RunSelection,
+  TeamProfileState,
+  WebviewMessage,
+  WorkspaceSnapshot
+} from './types.js'
 
 export async function getWorkspaceRoot(): Promise<string> {
   const folder = vscode.workspace.workspaceFolders?.[0]
@@ -125,6 +146,9 @@ export class OrdoWorkspace {
   private connectionCheck = 0
   private usageCheck = 0
   private lastConnections: readonly ConnectionView[] = []
+  private activeRun?: AbortController
+  private activeChat?: { readonly controller: AbortController; chatId?: string }
+  private readonly pendingApprovals = new Map<string, (decision: AgentApprovalDecision) => void>()
   private savingProfile = false
   private sink?: (message: HostMessage) => void
 
@@ -136,6 +160,10 @@ export class OrdoWorkspace {
 
   attach(sink: ((message: HostMessage) => void) | undefined): void {
     this.sink = sink
+    if (!sink) {
+      // Nobody can answer a permission request without the page: decline, never guess.
+      this.declinePendingApprovals()
+    }
   }
 
   async handleMessage(message: WebviewMessage): Promise<void> {
@@ -145,14 +173,40 @@ export class OrdoWorkspace {
         case 'refresh':
           await Promise.all([
             this.refresh(),
-            this.refreshConnections().then(() => this.refreshUsage()),
+            this.refreshConnections().then(() =>
+              Promise.all([this.refreshUsage(), this.refreshChats()])
+            ),
             this.refreshProfile(),
             this.refreshWorkflow()
           ])
           break
         case 'checkConnections':
           await this.refreshConnections()
-          await this.refreshUsage()
+          await Promise.all([this.refreshUsage(), this.refreshChats()])
+          break
+        case 'loadChats':
+          await this.refreshChats()
+          break
+        case 'openChat':
+          if (typeof message.id === 'string') {
+            await this.openChat(message.id)
+          }
+          break
+        case 'deleteChat':
+          if (typeof message.id === 'string') {
+            await this.removeChat(message.id)
+          }
+          break
+        case 'sendChat': {
+          const harness = findHarness(message.harness)?.id
+          const chatId = typeof message.chatId === 'string' ? message.chatId : undefined
+          if (harness && typeof message.text === 'string') {
+            await this.sendChat(chatId, harness, message.text)
+          }
+          break
+        }
+        case 'stopChat':
+          this.activeChat?.controller.abort()
           break
         case 'setExecutablePath':
           await this.setExecutablePath(message.id)
@@ -193,6 +247,69 @@ export class OrdoWorkspace {
         case 'workflowAction':
           await this.runWorkflowAction(message)
           break
+        case 'openReview': {
+          const ids = stepIds(message)
+          if (ids) {
+            await this.openReviewPanel(ids.planId, ids.stepId, ids.specId)
+          }
+          break
+        }
+        case 'openDiff': {
+          const ids = stepIds(message)
+          if (ids && typeof message.path === 'string') {
+            await this.openReviewDiff(ids.planId, ids.stepId, message.path)
+          }
+          break
+        }
+        case 'submitReview': {
+          const ids = stepIds(message)
+          const decision = REVIEW_DECISIONS.find(value => value === message.decision)
+          const rejectFiles = Array.isArray(message.rejectFiles)
+            ? message.rejectFiles.filter((file): file is string => typeof file === 'string')
+            : []
+          if (ids && decision) {
+            const note =
+              typeof message.note === 'string' ? message.note.trim() || undefined : undefined
+            await this.submitReview(ids.planId, ids.stepId, ids.specId, decision, note, rejectFiles)
+          }
+          break
+        }
+        case 'openRun': {
+          const ids = stepIds(message)
+          if (ids) {
+            await this.openRunPanel(ids.planId, ids.stepId, ids.specId)
+          }
+          break
+        }
+        case 'prepareRun':
+        case 'startRun': {
+          const ids = stepIds(message)
+          const harness = findHarness(message.harness)?.id
+          if (!ids || !harness) {
+            break
+          }
+          if (message.type === 'prepareRun') {
+            await this.previewRun(harness, ids.specId, ids.planId, ids.stepId)
+          } else {
+            const prompt =
+              typeof message.prompt === 'string' ? message.prompt.slice(0, 4000) : undefined
+            await this.startRun(harness, ids.specId, ids.planId, ids.stepId, prompt)
+          }
+          break
+        }
+        case 'stopRun':
+          this.activeRun?.abort()
+          this.declinePendingApprovals()
+          break
+        case 'approvalDecision': {
+          const id = typeof message.id === 'string' ? message.id : undefined
+          const resolve = id ? this.pendingApprovals.get(id) : undefined
+          if (id && resolve) {
+            this.pendingApprovals.delete(id)
+            resolve(message.decision === 'accept' ? 'accept' : 'decline')
+          }
+          break
+        }
       }
     } catch (error) {
       const text = messageOf(error)
@@ -598,17 +715,24 @@ export class OrdoWorkspace {
         break
       }
       case 'review-step': {
-        if (!targetId || !stepId) {
+        if (!targetId || !stepId || !specId) {
           return
         }
-        await this.reviewStep(root, targetId, stepId)
-        break
+        await this.openReviewPanel(targetId, stepId, specId)
+        return
       }
       case 'create-plan':
         await this.createImplementationPlan()
         break
+      case 'run-step': {
+        if (!targetId || !stepId || !specId) {
+          return
+        }
+        await this.openRunPanel(targetId, stepId, specId)
+        return
+      }
       default: {
-        const command = cliCommandFor(String(message.action), targetId, stepId, specId)
+        const command = cliCommandFor(String(message.action), targetId)
         if (command) {
           const copy = await vscode.window.showInformationMessage(
             `This step runs from the terminal for now: ${command}`,
@@ -627,89 +751,300 @@ export class OrdoWorkspace {
     }
   }
 
-  /**
-   * Code review of an agent step: inspect each changed file in the diff editor, uncheck
-   * the ones to undo, then decide. Files are undone before the decision is recorded.
-   */
-  private async reviewStep(root: string, planId: string, stepId: string): Promise<void> {
+  // ---------- inline code review and run panels ----------
+
+  async openReviewPanel(planId: string, stepId: string, specId: string): Promise<void> {
+    const root = await getWorkspaceRoot()
     const changes = await stepChanges(root, await readPlan(root, planId), stepId)
-    let rejectFiles: readonly string[] = []
-    if (changes.available && changes.files.length > 0) {
-      const picked = await chooseFilesToKeep(root, changes, stepId)
-      if (!picked) {
-        return
+    this.post({
+      type: 'review',
+      review: {
+        planId,
+        stepId,
+        specId,
+        available: changes.available,
+        reason: changes.reason,
+        files: changes.files
       }
-      rejectFiles = picked.rejected
-    } else if (!changes.available) {
-      void vscode.window.showInformationMessage(
-        `No diff for this run (${changes.reason}). You can still record the decision.`
-      )
+    })
+  }
+
+  private async openReviewDiff(planId: string, stepId: string, file: string): Promise<void> {
+    const root = await getWorkspaceRoot()
+    const changes = await stepChanges(root, await readPlan(root, planId), stepId)
+    if (changes.files.some(change => change.path === file)) {
+      await openAgentDiff(root, changes, file)
     }
-    const choice = await vscode.window.showQuickPick(
-      [
-        {
-          label: '$(check) Approve',
-          description: 'The step is done',
-          decision: 'approved' as StepReviewDecision
-        },
-        {
-          label: '$(discard) Request changes',
-          description: 'The step becomes runnable again',
-          decision: 'changes-requested' as StepReviewDecision
-        },
-        {
-          label: '$(circle-slash) Block',
-          description: 'Stop the step until the problem is solved',
-          decision: 'blocked' as StepReviewDecision
-        }
-      ],
-      {
-        title: `Review of step "${stepId}"`,
-        placeHolder: 'Your decision is recorded with your name'
+  }
+
+  private async submitReview(
+    planId: string,
+    stepId: string,
+    specId: string,
+    decision: StepReviewDecision,
+    note: string | undefined,
+    rejectFiles: readonly string[]
+  ): Promise<void> {
+    try {
+      const root = await getWorkspaceRoot()
+      await reviewAgentStep(root, planId, stepId, decision, {
+        note,
+        rejectFiles,
+        actorType: 'human'
+      })
+      this.log.info(
+        `Review recorded: ${planId}/${stepId} ${decision}, ${rejectFiles.length} file(s) undone`
+      )
+      this.post({ type: 'reviewResult', planId, stepId, ok: true })
+      await Promise.all([this.refresh(), this.refreshWorkflow(), this.loadTrail(specId)])
+    } catch (error) {
+      this.post({ type: 'reviewResult', planId, stepId, ok: false, message: messageOf(error) })
+    }
+  }
+
+  async openRunPanel(planId: string, stepId: string, specId: string): Promise<void> {
+    if (this.lastConnections.length === 0) {
+      await this.refreshConnections()
+    }
+    this.post({
+      type: 'runSetup',
+      run: {
+        planId,
+        stepId,
+        specId,
+        harnesses: runHarnesses(this.lastConnections),
+        running: Boolean(this.activeRun)
       }
+    })
+  }
+
+  private async runOptions(
+    harness: AgentAdapterId,
+    specId: string,
+    planId: string,
+    stepId: string,
+    prompt?: string
+  ): Promise<{ options: PlanStepRunOptions; apiKey?: string }> {
+    const root = await getWorkspaceRoot()
+    const definition = findHarness(harness) as HarnessDefinition
+    const executable = resolveExecutableSetting(
+      vscode.workspace.getConfiguration('ordo').get<string>(definition.pathSetting, '')
     )
-    if (!choice) {
+    const apiKey =
+      harness === 'claude-code' ? await this.secrets.get(CLAUDE_API_KEY_SECRET) : undefined
+    const content = await resolveProfileContentRoot(root, this.bundledContentRoot)
+    return {
+      apiKey,
+      options: {
+        harness,
+        directory: root,
+        specId,
+        planId,
+        stepId,
+        contentRoot: content.root,
+        command: executable.command,
+        apiKey,
+        prompt: prompt?.trim() || undefined
+      }
+    }
+  }
+
+  private async previewRun(
+    harness: AgentAdapterId,
+    specId: string,
+    planId: string,
+    stepId: string
+  ): Promise<void> {
+    try {
+      const { options } = await this.runOptions(harness, specId, planId, stepId)
+      const prepared = await preparePlanStepRun(options)
+      this.post({
+        type: 'runPreview',
+        planId,
+        stepId,
+        harness,
+        estimate: prepared.estimate,
+        selection: selectionOf(prepared.profileSelection)
+      })
+    } catch (error) {
+      this.post({ type: 'runPreview', planId, stepId, harness, error: messageOf(error) })
+    }
+  }
+
+  /**
+   * Runs a ready plan step with the chosen agent through the same runtime as
+   * `ordo agent`. Output and permission requests go to the page; when the agent
+   * finishes, the page switches to the code review of what it changed.
+   */
+  private async startRun(
+    harness: AgentAdapterId,
+    specId: string,
+    planId: string,
+    stepId: string,
+    prompt: string | undefined
+  ): Promise<void> {
+    if (this.activeRun) {
+      this.post({
+        type: 'runFailed',
+        message: 'An agent run is already in progress.',
+        stopped: false
+      })
       return
     }
-    let note: string | undefined
-    if (choice.decision !== 'approved') {
-      note = await vscode.window.showInputBox({
-        title: `Review of step "${stepId}"`,
-        prompt:
-          choice.decision === 'blocked'
-            ? 'Why is the step blocked?'
-            : 'What has to change? The next run should address it.',
-        ignoreFocusOut: true,
-        validateInput: value => (value.trim() ? undefined : 'A note is required.')
-      })
-      if (!note?.trim()) {
-        return
-      }
-    } else {
-      note =
-        (
-          await vscode.window.showInputBox({
-            title: `Review of step "${stepId}"`,
-            prompt: 'Optional note for the record',
-            ignoreFocusOut: true
-          })
-        )?.trim() || undefined
-    }
-    if (rejectFiles.length > 0) {
-      const confirm = await vscode.window.showWarningMessage(
-        `Undo ${rejectFiles.length} file(s)? They go back to their version from before the agent run: ${rejectFiles.join(', ')}`,
-        { modal: true },
-        'Undo and record the review'
+    const controller = new AbortController()
+    this.activeRun = controller
+    try {
+      const { options, apiKey } = await this.runOptions(harness, specId, planId, stepId, prompt)
+      const prepared = await preparePlanStepRun(options)
+      this.post({ type: 'runStarted', harness })
+      this.log.info(
+        `Agent run started: ${harness} on ${planId}/${stepId}, prompt ${describeEstimate(prepared.estimate)}`
       )
-      if (confirm !== 'Undo and record the review') {
-        return
+      const report = await executePlanStepRun(
+        prepared,
+        { apiKey },
+        {
+          signal: controller.signal,
+          onText: text => this.post({ type: 'runOutput', text }),
+          onApprovalRequest: request => this.askApprovalInPage(request)
+        }
+      )
+      this.post({ type: 'runFinished', changedFiles: report.changedFiles?.length })
+      this.log.info(`Agent run finished: ${harness} on ${planId}/${stepId}`)
+      await this.openReviewPanel(planId, stepId, specId)
+    } catch (error) {
+      this.post({
+        type: 'runFailed',
+        message: messageOf(error),
+        stopped: controller.signal.aborted
+      })
+    } finally {
+      this.activeRun = undefined
+      this.declinePendingApprovals()
+      await Promise.all([this.refresh(), this.refreshWorkflow(), this.refreshUsage()])
+    }
+  }
+
+  private chatView(thread: ChatThread): ChatView {
+    return {
+      thread,
+      handoff: {
+        'claude-code': chatHandoff(thread, 'claude-code'),
+        codex: chatHandoff(thread, 'codex')
       }
     }
-    await reviewAgentStep(root, planId, stepId, choice.decision, {
-      note,
-      rejectFiles,
-      actorType: 'human'
+  }
+
+  async refreshChats(): Promise<void> {
+    const root = await getWorkspaceRoot()
+    this.post({
+      type: 'chats',
+      chats: await listChats(root),
+      harnesses: runHarnesses(this.lastConnections),
+      running: this.activeChat?.chatId
     })
+  }
+
+  private async openChat(id: string): Promise<void> {
+    const root = await getWorkspaceRoot()
+    this.post({ type: 'chat', chat: this.chatView(await readChat(root, id)) })
+  }
+
+  private async removeChat(id: string): Promise<void> {
+    if (this.activeChat?.chatId === id) {
+      this.post({ type: 'chatError', message: 'Stop the agent before deleting this chat.' })
+      return
+    }
+    await deleteChat(await getWorkspaceRoot(), id)
+    await this.refreshChats()
+  }
+
+  /**
+   * One message of a personal chat, read-only: the agent can read the project but not
+   * change it, and permission requests are declined without asking.
+   */
+  private async sendChat(
+    chatId: string | undefined,
+    harness: AgentAdapterId,
+    text: string
+  ): Promise<void> {
+    if (this.activeChat) {
+      this.post({
+        type: 'chatError',
+        message: 'An agent is still answering. Wait for it or stop it first.'
+      })
+      return
+    }
+    const active: { readonly controller: AbortController; chatId?: string } = {
+      controller: new AbortController(),
+      chatId
+    }
+    this.activeChat = active
+    try {
+      const root = await getWorkspaceRoot()
+      const definition = findHarness(harness) as HarnessDefinition
+      const executable = resolveExecutableSetting(
+        vscode.workspace.getConfiguration('ordo').get<string>(definition.pathSetting, '')
+      )
+      const apiKey =
+        harness === 'claude-code' ? await this.secrets.get(CLAUDE_API_KEY_SECRET) : undefined
+      const result = await sendChatMessage({
+        projectRoot: root,
+        chatId,
+        agent: harness,
+        text,
+        command: executable.command,
+        apiKey,
+        access: 'read-only',
+        signal: active.controller.signal,
+        onStarted: chat => {
+          active.chatId = chat.id
+          this.post({ type: 'chatStarted', chat: this.chatView(chat) })
+        },
+        onText: output => {
+          if (active.chatId) {
+            this.post({ type: 'chatOutput', chatId: active.chatId, text: output })
+          }
+        },
+        onApprovalRequest: () => 'decline'
+      })
+      this.post({ type: 'chatReply', chat: this.chatView(result.chat) })
+      this.log.info(
+        `Chat reply from ${harness}${result.reply.error ? `: ${result.reply.error}` : ''}`
+      )
+    } catch (error) {
+      this.post({ type: 'chatError', message: messageOf(error) })
+    } finally {
+      this.activeChat = undefined
+      await Promise.all([this.refreshChats(), this.refreshUsage()])
+    }
+  }
+
+  private askApprovalInPage(request: AgentApprovalRequest): Promise<AgentApprovalDecision> {
+    if (!this.sink) {
+      return Promise.resolve('decline')
+    }
+    return new Promise(resolve => {
+      const id = randomUUID()
+      this.pendingApprovals.set(id, resolve)
+      this.post({
+        type: 'runApproval',
+        approval: {
+          id,
+          summary: request.summary,
+          command: request.command,
+          cwd: request.cwd,
+          reason: request.reason
+        }
+      })
+    })
+  }
+
+  private declinePendingApprovals(): void {
+    for (const resolve of this.pendingApprovals.values()) {
+      resolve('decline')
+    }
+    this.pendingApprovals.clear()
   }
 
   private async createProfile(): Promise<void> {
@@ -786,18 +1121,35 @@ export class OrdoWorkspace {
 }
 
 const ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+const REVIEW_DECISIONS: readonly StepReviewDecision[] = ['approved', 'changes-requested', 'blocked']
 
-function cliCommandFor(
-  action: string,
-  targetId: string | undefined,
-  stepId: string | undefined,
-  specId: string | undefined
-): string | undefined {
+function stepIds(message: {
+  readonly planId: unknown
+  readonly stepId: unknown
+  readonly specId?: unknown
+}): { planId: string; stepId: string; specId: string } | undefined {
+  const { planId, stepId, specId } = message
+  return typeof planId === 'string' &&
+    ID.test(planId) &&
+    typeof stepId === 'string' &&
+    ID.test(stepId) &&
+    (specId === undefined || (typeof specId === 'string' && ID.test(specId)))
+    ? { planId, stepId, specId: (specId as string | undefined) ?? '' }
+    : undefined
+}
+
+function selectionOf(selection: ProfileSessionSelection | undefined): RunSelection | undefined {
+  return selection
+    ? {
+        agent: selection.agent?.id,
+        skills: selection.skills.map(entry => entry.id),
+        rules: selection.rules.map(entry => entry.id)
+      }
+    : undefined
+}
+
+function cliCommandFor(action: string, targetId: string | undefined): string | undefined {
   switch (action) {
-    case 'run-step':
-      return specId && targetId && stepId
-        ? `ordo agent claude --spec ${specId} --plan ${targetId} --step ${stepId}`
-        : undefined
     case 'propose-architecture':
       return targetId ? `ordo architect create --spec ${targetId} --title "<title>" ...` : undefined
     case 'add-alternative':

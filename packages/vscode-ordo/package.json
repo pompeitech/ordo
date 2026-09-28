@@ -66,6 +66,11 @@
         "category": "Ordo"
       },
       {
+        "command": "ordo.openChat",
+        "title": "Open Chat",
+        "category": "Ordo"
+      },
+      {
         "command": "ordo.refresh",
         "title": "Refresh Shared Project Data",
         "category": "Ordo",
@@ -155,6 +160,9 @@
         },
         {
           "command": "ordo.openWorkflow"
+        },
+        {
+          "command": "ordo.openChat"
         }
       ]
     },

@@ -42,6 +42,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.registerWebviewViewProvider(LAUNCHER_VIEW_ID, new OrdoLauncherView(() => open())),
     vscode.commands.registerCommand('ordo.openWorkspace', () => open('overview')),
     vscode.commands.registerCommand('ordo.openWorkflow', () => open('workflow')),
+    vscode.commands.registerCommand('ordo.openChat', () => open('chat')),
     artifactWatcher,
     artifactWatcher.onDidCreate(refreshWorkflowSoon),
     artifactWatcher.onDidChange(refreshWorkflowSoon),
